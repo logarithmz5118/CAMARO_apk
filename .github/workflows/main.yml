@@ -1,4 +1,4 @@
-name: Camaro 7862 FYT Final Fixed APK
+name: Camaro 7862 Pure Java Zero-Error APK
 
 on:
   push:
@@ -22,66 +22,67 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: 4. Build Complete FYT 7862 Camaro APK
+      - name: 4. Build Pure Java FYT 7862 APK
         run: |
-          rm -rf fyt_final
-          mkdir -p fyt_final/app/src/main/java/com/camaro/launcher
-          mkdir -p fyt_final/app/src/main/assets
+          rm -rf fyt_java
+          mkdir -p fyt_java/app/src/main/java/com/camaro/launcher
+          mkdir -p fyt_java/app/src/main/assets
 
-          cat << 'EOF' > fyt_final/settings.gradle.kts
+          sed 's/^          //' << 'EOF' > fyt_java/settings.gradle
           pluginManagement {
-              repositories { google(); mavenCentral(); gradlePluginPortal() }
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
           }
           dependencyResolutionManagement {
               repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-              repositories { google(); mavenCentral() }
+              repositories {
+                  google()
+                  mavenCentral()
+              }
           }
           rootProject.name = "CamaroFYTLauncher"
-          include(":app")
+          include ':app'
           EOF
 
-          cat << 'EOF' > fyt_final/build.gradle.kts
+          sed 's/^          //' << 'EOF' > fyt_java/build.gradle
           plugins {
-              id("com.android.application") version "8.2.2" apply false
-              id("org.jetbrains.kotlin.android") version "1.9.22" apply false
+              id 'com.android.application' version '8.2.2' apply false
           }
           EOF
 
-          cat << 'EOF' > fyt_final/gradle.properties
+          sed 's/^          //' << 'EOF' > fyt_java/gradle.properties
           android.useAndroidX=true
           org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
           EOF
 
-          cat << 'EOF' > fyt_final/app/build.gradle.kts
+          sed 's/^          //' << 'EOF' > fyt_java/app/build.gradle
           plugins {
-              id("com.android.application")
-              id("org.jetbrains.kotlin.android")
+              id 'com.android.application'
           }
           android {
-              namespace = "com.camaro.launcher"
-              compileSdk = 34
+              namespace 'com.camaro.launcher'
+              compileSdk 34
               defaultConfig {
-                  applicationId = "com.camaro.launcher"
-                  minSdk = 28
-                  targetSdk = 34
-                  versionCode = 5
-                  versionName = "5.0-FYT7862-Fixed"
+                  applicationId "com.camaro.launcher"
+                  minSdk 28
+                  targetSdk 34
+                  versionCode 6
+                  versionName "6.0-PureJava-FYT7862"
               }
               compileOptions {
-                  sourceCompatibility = JavaVersion.VERSION_17
-                  targetCompatibility = JavaVersion.VERSION_17
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
               }
-              kotlinOptions { jvmTarget = "17" }
           }
-          dependencies {
-              implementation("org.lsposed.hiddenapibypass:hiddenapibypass:4.3")
-          }
+          dependencies {}
           EOF
 
-          cat << 'EOF' > fyt_final/app/src/main/AndroidManifest.xml
+          sed 's/^          //' << 'EOF' > fyt_java/app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools">
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET" />
               <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
               <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -91,9 +92,7 @@ jobs:
               <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
               <uses-permission android:name="android.permission.REORDER_TASKS" />
               <uses-permission android:name="android.permission.GET_TASKS" />
-              <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
               <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-              <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
 
               <application
                   android:allowBackup="true"
@@ -108,14 +107,12 @@ jobs:
                       android:screenOrientation="sensorLandscape"
                       android:stateNotNeeded="true"
                       android:clearTaskOnLaunch="true"
-                      android:excludeFromRecents="false"
                       android:configChanges="orientation|screenSize|keyboardHidden|uiMode">
                       <intent-filter android:priority="1000">
                           <action android:name="android.intent.action.MAIN" />
                           <category android:name="android.intent.category.HOME" />
                           <category android:name="android.intent.category.DEFAULT" />
                           <category android:name="android.intent.category.LAUNCHER" />
-                          <category android:name="android.intent.category.MONKEY" />
                       </intent-filter>
                   </activity>
 
@@ -138,752 +135,825 @@ jobs:
                       android:exported="true">
                       <intent-filter>
                           <action android:name="android.intent.action.BOOT_COMPLETED" />
-                          <action android:name="android.intent.action.QUICKBOOT_POWERON" />
                       </intent-filter>
                   </receiver>
               </application>
           </manifest>
           EOF
 
-          cat << 'EOF' > fyt_final/app/src/main/java/com/camaro/launcher/MediaNotificationService.kt
-          package com.camaro.launcher
-          import android.service.notification.NotificationListenerService
-          class MediaNotificationService : NotificationListenerService()
+          sed 's/^          //' << 'EOF' > fyt_java/app/src/main/java/com/camaro/launcher/MediaNotificationService.java
+          package com.camaro.launcher;
+          import android.service.notification.NotificationListenerService;
+          public class MediaNotificationService extends NotificationListenerService {}
           EOF
 
-          cat << 'EOF' > fyt_final/app/src/main/java/com/camaro/launcher/BootReceiver.kt
-          package com.camaro.launcher
-          import android.content.BroadcastReceiver
-          import android.content.Context
-          import android.content.Intent
+          sed 's/^          //' << 'EOF' > fyt_java/app/src/main/java/com/camaro/launcher/BootReceiver.java
+          package com.camaro.launcher;
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
 
-          class BootReceiver : BroadcastReceiver() {
-              override fun onReceive(context: Context, intent: Intent) {
-                  val i = Intent(context, MainActivity::class.java).apply {
-                      addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                  }
-                  context.startActivity(i)
+          public class BootReceiver extends BroadcastReceiver {
+              @Override
+              public void onReceive(Context context, Intent intent) {
+                  Intent i = new Intent(context, MainActivity.class);
+                  i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                  context.startActivity(i);
               }
           }
           EOF
 
-          cat << 'EOF' > fyt_final/app/src/main/java/com/camaro/launcher/HomeReturnService.kt
-          package com.camaro.launcher
+          sed 's/^          //' << 'EOF' > fyt_java/app/src/main/java/com/camaro/launcher/HomeReturnService.java
+          package com.camaro.launcher;
 
-          import android.app.*
-          import android.content.Context
-          import android.content.Intent
-          import android.graphics.Color
-          import android.graphics.PixelFormat
-          import android.graphics.drawable.GradientDrawable
-          import android.os.*
-          import android.provider.Settings
-          import android.view.*
-          import android.widget.TextView
+          import android.app.ActivityManager;
+          import android.app.Service;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.graphics.Color;
+          import android.graphics.PixelFormat;
+          import android.graphics.drawable.GradientDrawable;
+          import android.os.Handler;
+          import android.os.IBinder;
+          import android.os.Looper;
+          import android.provider.Settings;
+          import android.view.Gravity;
+          import android.view.View;
+          import android.view.WindowManager;
+          import android.widget.TextView;
+          import java.util.List;
 
-          class HomeReturnService : Service() {
-              private var wm: WindowManager? = null
-              private var floatingBtn: View? = null
-              private val handler = Handler(Looper.getMainLooper())
-              companion object {
-                  var allowStockLauncherTemporarily = false
+          public class HomeReturnService extends Service {
+              private WindowManager wm;
+              private View floatingBtn;
+              private final Handler handler = new Handler(Looper.getMainLooper());
+              public static boolean allowStockTemporarily = false;
+
+              @Override
+              public IBinder onBind(Intent intent) { return null; }
+
+              @Override
+              public void onCreate() {
+                  super.onCreate();
+                  createFloatingPill();
+                  startFytHomeWatcher();
               }
 
-              override fun onBind(intent: Intent?): IBinder? = null
+              private void createFloatingPill() {
+                  if (!Settings.canDrawOverlays(this)) return;
+                  wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+                  TextView pill = new TextView(this);
+                  pill.setText("🏠 카마로 홈");
+                  pill.setTextColor(Color.parseColor("#38BDF8"));
+                  pill.setTextSize(11f);
+                  pill.setPadding(24, 10, 24, 10);
 
-              override fun onCreate() {
-                  super.onCreate()
-                  createFloatingHomePill()
-                  startFytHomeHijacker()
-              }
+                  GradientDrawable bg = new GradientDrawable();
+                  bg.setCornerRadius(40f);
+                  bg.setColor(Color.parseColor("#CC090D16"));
+                  bg.setStroke(2, Color.parseColor("#6638BDF8"));
+                  pill.setBackground(bg);
 
-              private fun createFloatingHomePill() {
-                  if (!Settings.canDrawOverlays(this)) return
-                  wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-                  val pill = TextView(this).apply {
-                      text = "🏠 카마로 홈"
-                      setTextColor(Color.parseColor("#38BDF8"))
-                      textSize = 11f
-                      setPadding(24, 10, 24, 10)
-                      background = GradientDrawable().apply {
-                          cornerRadius = 40f
-                          setColor(Color.parseColor("#CC090D16"))
-                          setStroke(2, Color.parseColor("#6638BDF8"))
-                      }
-                      setOnClickListener {
-                          allowStockLauncherTemporarily = false
-                          val i = Intent(this@HomeReturnService, MainActivity::class.java).apply {
-                              addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-                          }
-                          startActivity(i)
-                      }
-                  }
+                  pill.setOnClickListener(v -> {
+                      allowStockTemporarily = false;
+                      Intent i = new Intent(HomeReturnService.this, MainActivity.class);
+                      i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                      startActivity(i);
+                  });
 
-                  val params = WindowManager.LayoutParams(
+                  WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                       WindowManager.LayoutParams.WRAP_CONTENT,
                       WindowManager.LayoutParams.WRAP_CONTENT,
                       WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                      WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                      WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                       PixelFormat.TRANSLUCENT
-                  ).apply {
-                      gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
-                      y = 4
-                  }
+                  );
+                  params.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
+                  params.y = 4;
                   try {
-                      wm?.addView(pill, params)
-                      floatingBtn = pill
-                  } catch (e: Exception) {}
+                      wm.addView(pill, params);
+                      floatingBtn = pill;
+                  } catch (Exception ignored) {}
               }
 
-              private fun startFytHomeHijacker() {
-                  handler.post(object : Runnable {
-                      override fun run() {
+              private void startFytHomeWatcher() {
+                  handler.post(new Runnable() {
+                      @Override
+                      public void run() {
                           try {
-                              if (!allowStockLauncherTemporarily) {
-                                  val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-                                  @Suppress("DEPRECATION")
-                                  val tasks = am.getRunningTasks(1)
-                                  if (tasks.isNotEmpty()) {
-                                      val topPkg = tasks[0].topActivity?.packageName ?: ""
+                              if (!allowStockTemporarily) {
+                                  ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                                  List<ActivityManager.RunningTaskInfo> tasks = am.getRunningTasks(1);
+                                  if (tasks != null && !tasks.isEmpty() && tasks.get(0).topActivity != null) {
+                                      String topPkg = tasks.get(0).topActivity.getPackageName();
                                       if (topPkg.contains("launcher66") || topPkg.contains("com.fyt.launcher") || topPkg.contains("com.android.launcher3")) {
-                                          val i = Intent(this@HomeReturnService, MainActivity::class.java).apply {
-                                              addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-                                          }
-                                          startActivity(i)
+                                          Intent i = new Intent(HomeReturnService.this, MainActivity.class);
+                                          i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                          startActivity(i);
                                       }
                                   }
                               }
-                          } catch (e: Exception) {}
-                          handler.postDelayed(this, 350L)
+                          } catch (Exception ignored) {}
+                          handler.postDelayed(this, 350L);
                       }
-                  })
+                  });
               }
 
-              override fun onDestroy() {
-                  super.onDestroy()
-                  if (floatingBtn != null) {
-                      try { wm?.removeView(floatingBtn) } catch (e: Exception) {}
+              @Override
+              public void onDestroy() {
+                  super.onDestroy();
+                  if (floatingBtn != null && wm != null) {
+                      try { wm.removeView(floatingBtn); } catch (Exception ignored) {}
                   }
               }
           }
           EOF
 
-          cat << 'EOF' > fyt_final/app/src/main/java/com/camaro/launcher/MainActivity.kt
-          package com.camaro.launcher
+          sed 's/^          //' << 'EOF' > fyt_java/app/src/main/java/com/camaro/launcher/MainActivity.java
+          package com.camaro.launcher;
 
-          import android.annotation.SuppressLint
-          import android.app.*
-          import android.app.role.RoleManager
-          import android.content.*
-          import android.content.pm.PackageManager
-          import android.graphics.*
-          import android.graphics.drawable.GradientDrawable
-          import android.hardware.display.DisplayManager
-          import android.hardware.display.VirtualDisplay
-          import android.hardware.input.InputManager
-          import android.location.*
-          import android.media.*
-          import android.media.session.*
-          import android.net.Uri
-          import android.os.*
-          import android.provider.Settings
-          import android.util.Base64
-          import android.view.*
-          import android.webkit.*
-          import android.widget.*
-          import org.json.JSONArray
-          import org.json.JSONObject
-          import org.lsposed.hiddenapibypass.HiddenApiBypass
-          import java.io.ByteArrayOutputStream
-          import kotlin.math.roundToInt
+          import android.annotation.SuppressLint;
+          import android.app.Activity;
+          import android.app.ActivityOptions;
+          import android.app.role.RoleManager;
+          import android.content.BroadcastReceiver;
+          import android.content.ComponentName;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.content.IntentFilter;
+          import android.content.ServiceConnection;
+          import android.content.SharedPreferences;
+          import android.content.pm.PackageManager;
+          import android.content.pm.ResolveInfo;
+          import android.graphics.Bitmap;
+          import android.graphics.Color;
+          import android.graphics.SurfaceTexture;
+          import android.graphics.drawable.GradientDrawable;
+          import android.hardware.display.DisplayManager;
+          import android.hardware.display.VirtualDisplay;
+          import android.hardware.input.InputManager;
+          import android.location.Location;
+          import android.location.LocationListener;
+          import android.location.LocationManager;
+          import android.media.AudioManager;
+          import android.media.MediaMetadata;
+          import android.media.session.MediaController;
+          import android.media.session.MediaSessionManager;
+          import android.media.session.PlaybackState;
+          import android.net.Uri;
+          import android.os.BatteryManager;
+          import android.os.Binder;
+          import android.os.Build;
+          import android.os.Bundle;
+          import android.os.Handler;
+          import android.os.IBinder;
+          import android.os.Looper;
+          import android.os.Parcel;
+          import android.provider.Settings;
+          import android.util.Base64;
+          import android.view.InputEvent;
+          import android.view.KeyEvent;
+          import android.view.MotionEvent;
+          import android.view.Surface;
+          import android.view.TextureView;
+          import android.view.View;
+          import android.view.WindowInsets;
+          import android.view.WindowInsetsController;
+          import android.webkit.JavascriptInterface;
+          import android.webkit.WebChromeClient;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          import android.widget.FrameLayout;
+          import android.widget.Toast;
+          import org.json.JSONArray;
+          import org.json.JSONObject;
+          import java.io.ByteArrayOutputStream;
+          import java.lang.reflect.Method;
+          import java.util.Arrays;
+          import java.util.List;
+          import java.util.Locale;
 
-          class MainActivity : Activity() {
-              private lateinit var rootLayout: FrameLayout
-              private lateinit var webView: WebView
-              private var pipContainer: FrameLayout? = null
-              private var textureView: TextureView? = null
-              private var virtualDisplay: VirtualDisplay? = null
+          public class MainActivity extends Activity {
+              private FrameLayout rootLayout;
+              private WebView webView;
+              private FrameLayout pipContainer;
+              private TextureView textureView;
+              private VirtualDisplay virtualDisplay;
 
-              private var locationManager: LocationManager? = null
-              private var mediaSessionManager: MediaSessionManager? = null
-              private var activeController: MediaController? = null
-              private val handler = Handler(Looper.getMainLooper())
-              private lateinit var prefs: SharedPreferences
-              private var syuCanbusModule: IBinder? = null
-
-              private val hvacState = JSONObject().apply {
-                  put("ac", true)
-                  put("inOutCycle", true)
-                  put("frontDefrost", false)
-                  put("rearDefrost", false)
-                  put("windLevel", 2)
-                  put("tempLeft", "LO")
-                  put("tempRight", "LO")
-                  put("seatHeatL", 0)
-                  put("seatHeatR", 0)
-                  put("doorOpen", false)
-                  put("trunkOpen", false)
-                  put("lastRaw", "대기중")
-              }
+              private LocationManager locationManager;
+              private MediaSessionManager mediaSessionManager;
+              private MediaController activeController;
+              private final Handler handler = new Handler(Looper.getMainLooper());
+              private SharedPreferences prefs;
+              private IBinder syuCanbusModule;
+              private final JSONObject hvacState = new JSONObject();
 
               @SuppressLint("SetJavaScriptEnabled")
-              override fun onCreate(savedInstanceState: Bundle?) {
-                  super.onCreate(savedInstanceState)
-                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                      try { HiddenApiBypass.addHiddenApiExemptions("") } catch (e: Exception) {}
-                  }
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  initDefaultHvac();
 
-                  prefs = getSharedPreferences("camaro_fyt_final", Context.MODE_PRIVATE)
-                  rootLayout = FrameLayout(this)
-                  webView = WebView(this)
-                  rootLayout.addView(webView, FrameLayout.LayoutParams(
+                  prefs = getSharedPreferences("camaro_fyt_java", Context.MODE_PRIVATE);
+                  rootLayout = new FrameLayout(this);
+                  webView = new WebView(this);
+                  rootLayout.addView(webView, new FrameLayout.LayoutParams(
                       FrameLayout.LayoutParams.MATCH_PARENT,
                       FrameLayout.LayoutParams.MATCH_PARENT
-                  ))
+                  ));
 
-                  setupInteractiveVirtualDisplay()
-                  setContentView(rootLayout)
-                  hideSystemUI()
+                  setupVirtualDisplayBox();
+                  setContentView(rootLayout);
+                  hideSystemUI();
 
-                  webView.settings.apply {
-                      javaScriptEnabled = true
-                      domStorageEnabled = true
-                      allowFileAccess = true
-                      mediaPlaybackRequiresUserGesture = false
-                  }
-                  webView.webChromeClient = WebChromeClient()
-                  webView.webViewClient = object : WebViewClient() {
-                      override fun onPageFinished(view: WebView?, url: String?) {
-                          super.onPageFinished(view, url)
-                          initSystems()
+                  WebSettings s = webView.getSettings();
+                  s.setJavaScriptEnabled(true);
+                  s.setDomStorageEnabled(true);
+                  s.setAllowFileAccess(true);
+                  s.setMediaPlaybackRequiresUserGesture(false);
+
+                  webView.setWebChromeClient(new WebChromeClient());
+                  webView.setWebViewClient(new WebViewClient() {
+                      @Override
+                      public void onPageFinished(WebView view, String url) {
+                          super.onPageFinished(view, url);
+                          initAllSystems();
                       }
-                  }
-                  webView.addJavascriptInterface(FytCarBridge(this), "AndroidBridge")
-                  webView.loadUrl("file:///android_asset/index.html")
+                  });
+                  webView.addJavascriptInterface(new FytBridge(), "AndroidBridge");
+                  webView.loadUrl("file:///android_asset/index.html");
+              }
+
+              private void initDefaultHvac() {
+                  try {
+                      hvacState.put("ac", true);
+                      hvacState.put("inOutCycle", true);
+                      hvacState.put("frontDefrost", false);
+                      hvacState.put("rearDefrost", false);
+                      hvacState.put("windLevel", 2);
+                      hvacState.put("tempLeft", "LO");
+                      hvacState.put("tempRight", "LO");
+                      hvacState.put("seatHeatL", 0);
+                      hvacState.put("seatHeatR", 0);
+                      hvacState.put("doorOpen", false);
+                      hvacState.put("trunkOpen", false);
+                      hvacState.put("lastRaw", "대기중");
+                  } catch (Exception ignored) {}
               }
 
               @SuppressLint("ClickableViewAccessibility")
-              private fun setupInteractiveVirtualDisplay() {
-                  pipContainer = FrameLayout(this).apply {
-                      visibility = View.GONE
-                      background = GradientDrawable().apply {
-                          cornerRadius = 20f
-                          setColor(Color.BLACK)
-                      }
-                      clipToOutline = true
-                  }
-                  textureView = TextureView(this)
-                  textureView?.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
-                      override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
-                          createVirtualDisplay(Surface(surface), width, height)
-                      }
-                      override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
-                          virtualDisplay?.resize(width, height, 220)
-                      }
-                      override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
-                          virtualDisplay?.release()
-                          virtualDisplay = null
-                          return true
-                      }
-                      override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {}
-                  }
+              private void setupVirtualDisplayBox() {
+                  pipContainer = new FrameLayout(this);
+                  pipContainer.setVisibility(View.GONE);
+                  GradientDrawable bg = new GradientDrawable();
+                  bg.setCornerRadius(20f);
+                  bg.setColor(Color.BLACK);
+                  pipContainer.setBackground(bg);
+                  pipContainer.setClipToOutline(true);
 
-                  textureView?.setOnTouchListener { _, event ->
-                      val vd = virtualDisplay ?: return@setOnTouchListener false
-                      val displayId = vd.display.displayId
+                  textureView = new TextureView(this);
+                  textureView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
+                      @Override
+                      public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+                          createVD(new Surface(surface), width, height);
+                      }
+                      @Override
+                      public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+                          if (virtualDisplay != null) virtualDisplay.resize(width, height, 220);
+                      }
+                      @Override
+                      public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+                          if (virtualDisplay != null) {
+                              virtualDisplay.release();
+                              virtualDisplay = null;
+                          }
+                          return true;
+                      }
+                      @Override
+                      public void onSurfaceTextureUpdated(SurfaceTexture surface) {}
+                  });
+
+                  textureView.setOnTouchListener((v, event) -> {
+                      if (virtualDisplay == null) return false;
+                      int displayId = virtualDisplay.getDisplay().getDisplayId();
                       try {
-                          val copy = MotionEvent.obtain(event)
-                          val setDisplayIdMethod = InputEvent::class.java.getDeclaredMethod("setDisplayId", Int::class.javaPrimitiveType)
-                          setDisplayIdMethod.isAccessible = true
-                          setDisplayIdMethod.invoke(copy, displayId)
+                          MotionEvent copy = MotionEvent.obtain(event);
+                          Method setDisp = InputEvent.class.getDeclaredMethod("setDisplayId", int.class);
+                          setDisp.setAccessible(true);
+                          setDisp.invoke(copy, displayId);
 
-                          val im = getSystemService(Context.INPUT_SERVICE) as InputManager
-                          val injectMethod = InputManager::class.java.getDeclaredMethod(
-                              "injectInputEvent",
-                              InputEvent::class.java,
-                              Int::class.javaPrimitiveType
-                          )
-                          injectMethod.isAccessible = true
-                          injectMethod.invoke(im, copy, 0)
-                          copy.recycle()
-                          true
-                      } catch (e: Exception) {
-                          false
+                          InputManager im = (InputManager) getSystemService(Context.INPUT_SERVICE);
+                          Method inject = InputManager.class.getDeclaredMethod("injectInputEvent", InputEvent.class, int.class);
+                          inject.setAccessible(true);
+                          inject.invoke(im, copy, 0);
+                          copy.recycle();
+                          return true;
+                      } catch (Exception e) {
+                          return false;
                       }
-                  }
+                  });
 
-                  pipContainer?.addView(textureView, FrameLayout.LayoutParams(
+                  pipContainer.addView(textureView, new FrameLayout.LayoutParams(
                       FrameLayout.LayoutParams.MATCH_PARENT,
                       FrameLayout.LayoutParams.MATCH_PARENT
-                  ))
-                  rootLayout.addView(pipContainer)
+                  ));
+                  rootLayout.addView(pipContainer);
               }
 
-              private fun createVirtualDisplay(surface: Surface, width: Int, height: Int) {
+              private void createVD(Surface surface, int w, int h) {
                   try {
-                      val dm = getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-                      virtualDisplay?.release()
+                      DisplayManager dm = (DisplayManager) getSystemService(Context.DISPLAY_SERVICE);
+                      if (virtualDisplay != null) virtualDisplay.release();
                       virtualDisplay = dm.createVirtualDisplay(
                           "CamaroCarPlayVD",
-                          if (width > 100) width else 700,
-                          if (height > 100) height else 500,
+                          w > 100 ? w : 700,
+                          h > 100 ? h : 500,
                           220,
                           surface,
-                          DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC or DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY
-                      )
-                  } catch (e: Exception) {}
+                          DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC | DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY
+                      );
+                  } catch (Exception ignored) {}
               }
 
-              private fun initSystems() {
+              private void initAllSystems() {
                   if (Settings.canDrawOverlays(this)) {
-                      startService(Intent(this, HomeReturnService::class.java))
+                      startService(new Intent(this, HomeReturnService.class));
                   }
-                  bindFytSyuToolkitService()
-                  startBatteryAndCanbusBroadcasts()
-                  startGpsSpeed()
-                  startMediaSessionPolling()
-                  pushHvacToUi()
+                  bindFytSyuToolkit();
+                  startBatteryReceiver();
+                  startGpsSpeed();
+                  startMediaPolling();
+                  pushHvac();
               }
 
-              private fun bindFytSyuToolkitService() {
-                  val pkgs = listOf("com.syu.ms", "com.syu.canbus")
-                  for (pkg in pkgs) {
+              private void bindFytSyuToolkit() {
+                  String[] pkgs = new String[]{"com.syu.ms", "com.syu.canbus"};
+                  for (String pkg : pkgs) {
                       try {
-                          val intent = Intent("com.syu.ms.toolkit").setPackage(pkg)
-                          bindService(intent, object : ServiceConnection {
-                              override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-                                  if (service == null) return
+                          Intent intent = new Intent("com.syu.ms.toolkit").setPackage(pkg);
+                          bindService(intent, new ServiceConnection() {
+                              @Override
+                              public void onServiceConnected(ComponentName name, IBinder service) {
+                                  if (service == null) return;
                                   try {
-                                      val data = Parcel.obtain()
-                                      val reply = Parcel.obtain()
-                                      data.writeInterfaceToken("com.syu.ipc.IRemoteToolkit")
-                                      data.writeInt(7)
-                                      service.transact(1, data, reply, 0)
-                                      reply.readException()
-                                      syuCanbusModule = reply.readStrongBinder()
-                                      data.recycle()
-                                      reply.recycle()
+                                      Parcel data = Parcel.obtain();
+                                      Parcel reply = Parcel.obtain();
+                                      data.writeInterfaceToken("com.syu.ipc.IRemoteToolkit");
+                                      data.writeInt(7); // CANBUS = 7
+                                      service.transact(1, data, reply, 0);
+                                      reply.readException();
+                                      syuCanbusModule = reply.readStrongBinder();
+                                      data.recycle();
+                                      reply.recycle();
                                       if (syuCanbusModule != null) {
-                                          registerCanbusCodes(syuCanbusModule!!)
-                                          sendJs("window.onCanbusBadge('FYT 7862 LZ-Camaro 연결됨')")
+                                          registerCanbusCallbacks(syuCanbusModule);
+                                          sendJs("window.onCanbusBadge('FYT 7862 LZ-Camaro 직결됨')");
                                       }
-                                  } catch (e: Exception) {}
+                                  } catch (Exception ignored) {}
                               }
-                              override fun onServiceDisconnected(name: ComponentName?) {}
-                          }, Context.BIND_AUTO_CREATE)
-                      } catch (e: Exception) {}
+                              @Override
+                              public void onServiceDisconnected(ComponentName name) {}
+                          }, Context.BIND_AUTO_CREATE);
+                      } catch (Exception ignored) {}
                   }
               }
 
-              private fun registerCanbusCodes(moduleBinder: IBinder) {
-                  val cb = object : Binder() {
-                      override fun onTransact(code: Int, data: Parcel, reply: Parcel?, flags: Int): Boolean {
+              private void registerCanbusCallbacks(IBinder moduleBinder) {
+                  Binder cb = new Binder() {
+                      @Override
+                      protected boolean onTransact(int code, Parcel data, Parcel reply, int flags) {
                           if (code == 1) {
                               try {
-                                  data.enforceInterface("com.syu.ipc.IModuleCallback")
-                                  val uCode = data.readInt()
-                                  val ints = data.createIntArray()
-                                  if (ints != null && ints.isNotEmpty()) {
-                                      onSyuUpdate(uCode, ints[0])
+                                  data.enforceInterface("com.syu.ipc.IModuleCallback");
+                                  int uCode = data.readInt();
+                                  int[] ints = data.createIntArray();
+                                  if (ints != null && ints.length > 0) {
+                                      handleCanbusCode(uCode, ints[0]);
                                   }
-                              } catch (e: Exception) {}
-                              return true
+                              } catch (Exception ignored) {}
+                              return true;
                           }
-                          return super.onTransact(code, data, reply, flags)
+                          return false;
                       }
-                  }
-                  for (i in 0..120) {
+                  };
+                  for (int i = 0; i <= 120; i++) {
                       try {
-                          val p = Parcel.obtain()
-                          val r = Parcel.obtain()
-                          p.writeInterfaceToken("com.syu.ipc.IRemoteModule")
-                          p.writeStrongBinder(cb)
-                          p.writeInt(i)
-                          p.writeInt(1)
-                          moduleBinder.transact(2, p, r, 0)
-                          p.recycle()
-                          r.recycle()
-                      } catch (e: Exception) {}
+                          Parcel p = Parcel.obtain();
+                          Parcel r = Parcel.obtain();
+                          p.writeInterfaceToken("com.syu.ipc.IRemoteModule");
+                          p.writeStrongBinder(cb);
+                          p.writeInt(i);
+                          p.writeInt(1);
+                          moduleBinder.transact(2, p, r, 0);
+                          p.recycle();
+                          r.recycle();
+                      } catch (Exception ignored) {}
                   }
               }
 
-              private fun onSyuUpdate(code: Int, value: Int) {
-                  hvacState.put("lastRaw", "Code[$code]=$value")
-                  when (code) {
-                      0, 1, 2, 3 -> hvacState.put("doorOpen", value == 1)
-                      4 -> hvacState.put("trunkOpen", value == 1)
-                      11 -> hvacState.put("ac", value == 1)
-                      12 -> hvacState.put("inOutCycle", value == 1)
-                      15, 18 -> hvacState.put("frontDefrost", value == 1)
-                      16 -> hvacState.put("rearDefrost", value == 1)
-                      21 -> hvacState.put("windLevel", value.coerceIn(0, 7))
-                      27 -> hvacState.put("tempLeft", parseCamaroTemp(value))
-                      28 -> hvacState.put("tempRight", parseCamaroTemp(value))
-                      29 -> hvacState.put("seatHeatL", value.coerceIn(0, 3))
-                      30 -> hvacState.put("seatHeatR", value.coerceIn(0, 3))
-                  }
-                  pushHvacToUi()
+              private void handleCanbusCode(int code, int val) {
+                  try {
+                      hvacState.put("lastRaw", "Code[" + code + "]=" + val);
+                      switch (code) {
+                          case 0: case 1: case 2: case 3:
+                              hvacState.put("doorOpen", val == 1); break;
+                          case 4:
+                              hvacState.put("trunkOpen", val == 1); break;
+                          case 11:
+                              hvacState.put("ac", val == 1); break;
+                          case 12:
+                              hvacState.put("inOutCycle", val == 1); break;
+                          case 15: case 18:
+                              hvacState.put("frontDefrost", val == 1); break;
+                          case 16:
+                              hvacState.put("rearDefrost", val == 1); break;
+                          case 21:
+                              hvacState.put("windLevel", Math.max(0, Math.min(7, val))); break;
+                          case 27:
+                              hvacState.put("tempLeft", formatTemp(val)); break;
+                          case 28:
+                              hvacState.put("tempRight", formatTemp(val)); break;
+                          case 29:
+                              hvacState.put("seatHeatL", Math.max(0, Math.min(3, val))); break;
+                          case 30:
+                              hvacState.put("seatHeatR", Math.max(0, Math.min(3, val))); break;
+                      }
+                  } catch (Exception ignored) {}
+                  pushHvac();
               }
 
-              private fun parseCamaroTemp(v: Int): String {
-                  return when {
-                      v <= 0 || v == 254 -> "LO"
-                      v == 255 || v >= 1000 -> "HI"
-                      v in 15..32 -> "${v}.0°"
-                      v in 30..65 -> String.format("%.1f°", v / 2.0f)
-                      v in 150..320 -> String.format("%.1f°", v / 10.0f)
-                      else -> "${v}°"
-                  }
+              private String formatTemp(int v) {
+                  if (v <= 0 || v == 254) return "LO";
+                  if (v == 255 || v >= 1000) return "HI";
+                  if (v >= 15 && v <= 32) return v + ".0°";
+                  if (v >= 30 && v <= 65) return String.format(Locale.US, "%.1f°", v / 2.0f);
+                  if (v >= 150 && v <= 320) return String.format(Locale.US, "%.1f°", v / 10.0f);
+                  return v + "°";
               }
 
-              private fun startBatteryAndCanbusBroadcasts() {
-                  val filter = IntentFilter().apply {
-                      addAction(Intent.ACTION_BATTERY_CHANGED)
+              private void startBatteryReceiver() {
+                  IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+                  registerReceiver(new BroadcastReceiver() {
+                      @Override
+                      public void onReceive(Context context, Intent intent) {
+                          int mv = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0);
+                          if (mv > 0) {
+                              float v = mv > 1000 ? mv / 1000.0f : (float) mv;
+                              float disp = (v >= 3.0f && v <= 5.0f) ? 14.3f : v;
+                              sendJs("window.onRealVolt('" + String.format(Locale.US, "%.1f", disp) + "V')");
+                          }
+                      }
+                  }, filter);
+              }
+
+              private void sendCanbusCmd(int cmd, int param) {
+                  if (syuCanbusModule == null) return;
+                  try {
+                      Parcel p = Parcel.obtain();
+                      Parcel r = Parcel.obtain();
+                      p.writeInterfaceToken("com.syu.ipc.IRemoteModule");
+                      p.writeInt(cmd);
+                      p.writeIntArray(new int[]{param});
+                      p.writeFloatArray(null);
+                      p.writeStringArray(null);
+                      syuCanbusModule.transact(1, p, r, 0);
+                      p.recycle();
+                      r.recycle();
+                  } catch (Exception ignored) {}
+              }
+
+              private void pushHvac() {
+                  sendJs("if(window.onHvacUpdate) window.onHvacUpdate(" + hvacState.toString() + ");");
+              }
+
+              private void startGpsSpeed() {
+                  locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                  if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                      requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 101);
+                      return;
                   }
-                  registerReceiver(object : BroadcastReceiver() {
-                      override fun onReceive(context: Context?, intent: Intent?) {
-                          if (intent?.action == Intent.ACTION_BATTERY_CHANGED) {
-                              val mv = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0)
-                              if (mv > 0) {
-                                  val v = if (mv > 1000) mv / 1000.0f else mv.toFloat()
-                                  val disp = if (v in 3.0..5.0) 14.3f else v
-                                  sendJs("window.onRealVolt('${String.format("%.1f", disp)}V')")
+                  try {
+                      locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 400L, 0f, new LocationListener() {
+                          @Override
+                          public void onLocationChanged(Location loc) {
+                              int kmh = Math.round(loc.getSpeed() * 3.6f);
+                              sendJs("if(window.onRealSpeed) window.onRealSpeed(" + kmh + ");");
+                          }
+                          @Override public void onStatusChanged(String p, int s, Bundle e) {}
+                          @Override public void onProviderEnabled(String p) {}
+                          @Override public void onProviderDisabled(String p) {}
+                      });
+                  } catch (Exception ignored) {}
+              }
+
+              private void startMediaPolling() {
+                  handler.post(new Runnable() {
+                      @Override
+                      public void run() {
+                          pollMedia();
+                          handler.postDelayed(this, 1000L);
+                      }
+                  });
+              }
+
+              private void pollMedia() {
+                  try {
+                      String listeners = Settings.Secure.getString(getContentResolver(), "enabled_notification_listeners");
+                      boolean hasNoti = listeners != null && listeners.contains(getPackageName());
+                      boolean hasOverlay = Settings.canDrawOverlays(this);
+                      sendJs("if(window.onPermCheck) window.onPermCheck(" + hasNoti + ", " + hasOverlay + ");");
+                      if (!hasNoti) return;
+
+                      mediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
+                      ComponentName comp = new ComponentName(this, MediaNotificationService.class);
+                      List<MediaController> ctrls = mediaSessionManager.getActiveSessions(comp);
+                      if (ctrls != null && !ctrls.isEmpty()) {
+                          activeController = ctrls.get(0);
+                          for (MediaController mc : ctrls) {
+                              if (mc.getPlaybackState() != null && mc.getPlaybackState().getState() == PlaybackState.STATE_PLAYING) {
+                                  activeController = mc;
+                                  break;
                               }
                           }
-                      }
-                  }, filter)
-              }
+                          MediaMetadata m = activeController.getMetadata();
+                          PlaybackState st = activeController.getPlaybackState();
+                          JSONObject obj = new JSONObject();
+                          obj.put("title", m != null && m.getString(MediaMetadata.METADATA_KEY_TITLE) != null ? m.getString(MediaMetadata.METADATA_KEY_TITLE) : "재생 중인 미디어");
+                          obj.put("artist", m != null && m.getString(MediaMetadata.METADATA_KEY_ARTIST) != null ? m.getString(MediaMetadata.METADATA_KEY_ARTIST) : activeController.getPackageName());
+                          obj.put("duration", m != null ? m.getLong(MediaMetadata.METADATA_KEY_DURATION) : 0L);
+                          obj.put("position", st != null ? st.getPosition() : 0L);
+                          obj.put("playing", st != null && st.getState() == PlaybackState.STATE_PLAYING);
 
-              private fun sendFytCanbusCmd(cmd: Int, param: Int) {
-                  val b = syuCanbusModule ?: return
-                  try {
-                      val p = Parcel.obtain()
-                      val r = Parcel.obtain()
-                      p.writeInterfaceToken("com.syu.ipc.IRemoteModule")
-                      p.writeInt(cmd)
-                      p.writeIntArray(intArrayOf(param))
-                      p.writeFloatArray(null)
-                      p.writeStringArray(null)
-                      b.transact(1, p, r, 0)
-                      p.recycle()
-                      r.recycle()
-                  } catch (e: Exception) {}
-              }
-
-              private fun pushHvacToUi() {
-                  sendJs("if(window.onHvacUpdate) window.onHvacUpdate(${hvacState.toString()});")
-              }
-
-              private fun startGpsSpeed() {
-                  locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-                  if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                      requestPermissions(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 101)
-                      return
-                  }
-                  try {
-                      locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 400L, 0f, object : LocationListener {
-                          override fun onLocationChanged(loc: Location) {
-                              sendJs("if(window.onRealSpeed) window.onRealSpeed(${(loc.speed * 3.6f).roundToInt()});")
-                          }
-                          override fun onStatusChanged(p: String?, s: Int, e: Bundle?) {}
-                      })
-                  } catch (e: Exception) {}
-              }
-
-              private fun startMediaSessionPolling() {
-                  handler.post(object : Runnable {
-                      override fun run() {
-                          pollMedia()
-                          handler.postDelayed(this, 1000L)
-                      }
-                  })
-              }
-
-              private fun pollMedia() {
-                  try {
-                      val listeners = Settings.Secure.getString(contentResolver, "enabled_notification_listeners") ?: ""
-                      val hasNoti = listeners.contains(packageName)
-                      val hasOverlay = Settings.canDrawOverlays(this)
-                      sendJs("if(window.onPermCheck) window.onPermCheck($hasNoti, $hasOverlay);")
-                      if (!hasNoti) return
-
-                      mediaSessionManager = getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
-                      val comp = ComponentName(this, MediaNotificationService::class.java)
-                      val ctrls = mediaSessionManager?.getActiveSessions(comp) ?: emptyList()
-                      if (ctrls.isNotEmpty()) {
-                          activeController = ctrls.firstOrNull { it.playbackState?.state == PlaybackState.STATE_PLAYING } ?: ctrls[0]
-                          val c = activeController!!
-                          val m = c.metadata
-                          val st = c.playbackState
-                          val obj = JSONObject().apply {
-                              put("title", m?.getString(MediaMetadata.METADATA_KEY_TITLE) ?: "재생 중인 미디어")
-                              put("artist", m?.getString(MediaMetadata.METADATA_KEY_ARTIST) ?: c.packageName)
-                              put("duration", m?.getLong(MediaMetadata.METADATA_KEY_DURATION) ?: 0L)
-                              put("position", st?.position ?: 0L)
-                              put("playing", st?.state == PlaybackState.STATE_PLAYING)
-                          }
-                          val bmp: Bitmap? = m?.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART) ?: m?.getBitmap(MediaMetadata.METADATA_KEY_ART)
+                          Bitmap bmp = m != null ? m.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART) : null;
+                          if (bmp == null && m != null) bmp = m.getBitmap(MediaMetadata.METADATA_KEY_ART);
                           if (bmp != null) {
-                              val bos = ByteArrayOutputStream()
-                              bmp.compress(Bitmap.CompressFormat.JPEG, 70, bos)
-                              obj.put("art", "data:image/jpeg;base64," + Base64.encodeToString(bos.toByteArray(), Base64.NO_WRAP))
+                              ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                              bmp.compress(Bitmap.CompressFormat.JPEG, 70, bos);
+                              obj.put("art", "data:image/jpeg;base64," + Base64.encodeToString(bos.toByteArray(), Base64.NO_WRAP));
                           }
-                          sendJs("if(window.onMediaUpdate) window.onMediaUpdate(${obj.toString()});")
+                          sendJs("if(window.onMediaUpdate) window.onMediaUpdate(" + obj.toString() + ");");
                       }
-                  } catch (e: Exception) {}
+                  } catch (Exception ignored) {}
               }
 
-              private fun sendJs(script: String) {
-                  runOnUiThread { webView.evaluateJavascript(script, null) }
+              private void sendJs(final String script) {
+                  runOnUiThread(() -> webView.evaluateJavascript(script, null));
               }
 
-              override fun onResume() {
-                  super.onResume()
-                  HomeReturnService.allowStockLauncherTemporarily = false
-                  hideSystemUI()
+              @Override
+              protected void onResume() {
+                  super.onResume();
+                  HomeReturnService.allowStockTemporarily = false;
+                  hideSystemUI();
               }
 
-              private fun hideSystemUI() {
+              private void hideSystemUI() {
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                      window.insetsController?.let {
-                          it.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                          it.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                      WindowInsetsController ic = getWindow().getInsetsController();
+                      if (ic != null) {
+                          ic.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+                          ic.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
                       }
                   } else {
-                      @Suppress("DEPRECATION")
-                      window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
+                      getWindow().getDecorView().setSystemUiVisibility(
+                          View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                      );
                   }
               }
 
-              inner class FytCarBridge(private val context: Context) {
-
+              public class FytBridge {
                   @JavascriptInterface
-                  fun requestOverlayPermission() {
+                  public void requestOverlayPermission() {
                       try {
-                          val i = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")).apply {
-                              addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                          }
-                          startActivity(i)
-                      } catch (e: Exception) {}
+                          Intent i = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+                          i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                          startActivity(i);
+                      } catch (Exception ignored) {}
                   }
 
                   @JavascriptInterface
-                  fun requestNotiPermission() {
+                  public void requestNotiPermission() {
                       try {
-                          startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS").apply {
-                              addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                          })
-                      } catch (e: Exception) {}
+                          Intent i = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
+                          i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                          startActivity(i);
+                      } catch (Exception ignored) {}
                   }
 
                   @JavascriptInterface
-                  fun requestDefaultHome() {
+                  public void requestDefaultHome() {
                       try {
-                          if (Settings.canDrawOverlays(context)) {
-                              startService(Intent(context, HomeReturnService::class.java))
+                          if (Settings.canDrawOverlays(MainActivity.this)) {
+                              startService(new Intent(MainActivity.this, HomeReturnService.class));
                           }
                           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                              val rm = getSystemService(RoleManager::class.java)
+                              RoleManager rm = getSystemService(RoleManager.class);
                               if (rm != null && rm.isRoleAvailable(RoleManager.ROLE_HOME) && !rm.isRoleHeld(RoleManager.ROLE_HOME)) {
-                                  startActivityForResult(rm.createRequestRoleIntent(RoleManager.ROLE_HOME), 202)
-                                  return
+                                  startActivityForResult(rm.createRequestRoleIntent(RoleManager.ROLE_HOME), 202);
+                                  return;
                               }
                           }
-                          startActivity(Intent(Settings.ACTION_HOME_SETTINGS).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) })
-                      } catch (e: Exception) {}
+                          Intent i = new Intent(Settings.ACTION_HOME_SETTINGS);
+                          i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                          startActivity(i);
+                      } catch (Exception ignored) {}
                   }
 
                   @JavascriptInterface
-                  fun goToStockFytLauncher() {
-                      HomeReturnService.allowStockLauncherTemporarily = true
-                      runOnUiThread { pipContainer?.visibility = View.GONE }
-                      val stockCandidates = listOf("com.android.launcher66", "com.fyt.launcher", "com.android.launcher3")
-                      for (pkg in stockCandidates) {
-                          val intent = context.packageManager.getLaunchIntentForPackage(pkg)
-                          if (intent != null) {
-                              intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                              context.startActivity(intent)
-                              return
+                  public void goToStockFytLauncher() {
+                      HomeReturnService.allowStockTemporarily = true;
+                      runOnUiThread(() -> pipContainer.setVisibility(View.GONE));
+                      String[] stocks = new String[]{"com.android.launcher66", "com.fyt.launcher", "com.android.launcher3"};
+                      for (String pkg : stocks) {
+                          Intent i = getPackageManager().getLaunchIntentForPackage(pkg);
+                          if (i != null) {
+                              i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                              startActivity(i);
+                              return;
                           }
                       }
-                      startActivity(Intent(Settings.ACTION_HOME_SETTINGS).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) })
+                      Intent i = new Intent(Settings.ACTION_HOME_SETTINGS);
+                      i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                      startActivity(i);
                   }
 
                   @JavascriptInterface
-                  fun launchSlot(slotName: String, embedInBox: Boolean, x: Int, y: Int, w: Int, h: Int) {
-                      val savedPkg = prefs.getString("slot_$slotName", null)
-                      val candidates = when (slotName) {
-                          "carplay" -> listOf(savedPkg, "com.syu.carlink", "com.zjinnova.zlink", "cn.manstep.phonemirrorBox", "com.carlinkit.autokit", "com.suding.speedplay")
-                          "tmap" -> listOf(savedPkg, "com.skt.tmap.ku")
-                          "kakao" -> listOf(savedPkg, "com.locnall.KimGiSa")
-                          "naver" -> listOf(savedPkg, "com.nhn.android.nmap")
-                          "obd" -> listOf(savedPkg, "com.ovz.carscanner", "org.prowl.torque")
-                          else -> listOf(savedPkg)
-                      }.filterNotNull()
+                  public void launchSlot(String slotName, boolean embedInBox, int x, int y, int w, int h) {
+                      String saved = prefs.getString("slot_" + slotName, null);
+                      List<String> candidates;
+                      if ("carplay".equals(slotName)) {
+                          candidates = Arrays.asList(saved, "com.syu.carlink", "com.zjinnova.zlink", "cn.manstep.phonemirrorBox", "com.carlinkit.autokit", "com.suding.speedplay");
+                      } else if ("tmap".equals(slotName)) {
+                          candidates = Arrays.asList(saved, "com.skt.tmap.ku");
+                      } else if ("kakao".equals(slotName)) {
+                          candidates = Arrays.asList(saved, "com.locnall.KimGiSa");
+                      } else if ("naver".equals(slotName)) {
+                          candidates = Arrays.asList(saved, "com.nhn.android.nmap");
+                      } else if ("obd".equals(slotName)) {
+                          candidates = Arrays.asList(saved, "com.ovz.carscanner", "org.prowl.torque");
+                      } else {
+                          candidates = Arrays.asList(saved);
+                      }
 
-                      var targetPkg: String? = null
-                      for (pkg in candidates) {
-                          if (context.packageManager.getLaunchIntentForPackage(pkg) != null) {
-                              targetPkg = pkg
-                              break
+                      String target = null;
+                      for (String pkg : candidates) {
+                          if (pkg != null && getPackageManager().getLaunchIntentForPackage(pkg) != null) {
+                              target = pkg;
+                              break;
                           }
                       }
-                      if (targetPkg == null) {
-                          sendJs("window.openAppDrawer('$slotName')")
-                          return
+                      if (target == null) {
+                          sendJs("window.openAppDrawer('" + slotName + "')");
+                          return;
                       }
 
-                      runOnUiThread {
-                          val intent = context.packageManager.getLaunchIntentForPackage(targetPkg!!)!!
-                          intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+                      final String finalPkg = target;
+                      runOnUiThread(() -> {
+                          Intent intent = getPackageManager().getLaunchIntentForPackage(finalPkg);
+                          if (intent == null) return;
+                          intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
                           if (embedInBox && virtualDisplay != null) {
-                              pipContainer?.layoutParams = FrameLayout.LayoutParams(w, h).apply {
-                                  leftMargin = x
-                                  topMargin = y
-                              }
-                              pipContainer?.visibility = View.VISIBLE
+                              FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(w, h);
+                              lp.leftMargin = x;
+                              lp.topMargin = y;
+                              pipContainer.setLayoutParams(lp);
+                              pipContainer.setVisibility(View.VISIBLE);
                               try {
-                                  val opts = ActivityOptions.makeBasic()
-                                  // 리플렉션으로 숨김 API(setLaunchDisplayId) 호출 -> 코틀린 컴파일 에러 방지
-                                  val setDisplayMethod = ActivityOptions::class.java.getMethod("setLaunchDisplayId", Int::class.javaPrimitiveType)
-                                  setDisplayMethod.invoke(opts, virtualDisplay!!.display.displayId)
-                                  context.startActivity(intent, opts.toBundle())
-                              } catch (e: Exception) {
-                                  context.startActivity(intent)
+                                  ActivityOptions opts = ActivityOptions.makeBasic();
+                                  Method m = ActivityOptions.class.getMethod("setLaunchDisplayId", int.class);
+                                  m.invoke(opts, virtualDisplay.getDisplay().getDisplayId());
+                                  startActivity(intent, opts.toBundle());
+                              } catch (Exception e) {
+                                  startActivity(intent);
                               }
                           } else {
-                              pipContainer?.visibility = View.GONE
-                              context.startActivity(intent)
+                              pipContainer.setVisibility(View.GONE);
+                              startActivity(intent);
                           }
-                      }
+                      });
                   }
 
                   @JavascriptInterface
-                  fun closePipBox() {
-                      runOnUiThread { pipContainer?.visibility = View.GONE }
+                  public void closePipBox() {
+                      runOnUiThread(() -> pipContainer.setVisibility(View.GONE));
                   }
 
                   @JavascriptInterface
-                  fun controlHvac(key: String, delta: Int) {
-                      when (key) {
-                          "wind" -> {
-                              val next = (hvacState.optInt("windLevel", 2) + delta).coerceIn(0, 7)
-                              hvacState.put("windLevel", next)
-                              sendFytCanbusCmd(10, if (delta > 0) 1 else 0)
+                  public void controlHvac(String key, int delta) {
+                      try {
+                          if ("wind".equals(key)) {
+                              int next = Math.max(0, Math.min(7, hvacState.optInt("windLevel", 2) + delta));
+                              hvacState.put("windLevel", next);
+                              sendCanbusCmd(10, delta > 0 ? 1 : 0);
+                          } else if ("ac".equals(key)) {
+                              boolean next = !hvacState.optBoolean("ac", true);
+                              hvacState.put("ac", next);
+                              sendCanbusCmd(2, next ? 1 : 0);
+                          } else if ("cycle".equals(key)) {
+                              boolean next = !hvacState.optBoolean("inOutCycle", true);
+                              hvacState.put("inOutCycle", next);
+                              sendCanbusCmd(3, next ? 1 : 0);
+                          } else if ("frontDef".equals(key)) {
+                              boolean next = !hvacState.optBoolean("frontDefrost", false);
+                              hvacState.put("frontDefrost", next);
+                              sendCanbusCmd(5, next ? 1 : 0);
+                          } else if ("rearDef".equals(key)) {
+                              boolean next = !hvacState.optBoolean("rearDefrost", false);
+                              hvacState.put("rearDefrost", next);
+                              sendCanbusCmd(6, next ? 1 : 0);
+                          } else if ("seatL".equals(key)) {
+                              int next = (hvacState.optInt("seatHeatL", 0) + 1) % 4;
+                              hvacState.put("seatHeatL", next);
+                              sendCanbusCmd(11, next);
+                          } else if ("seatR".equals(key)) {
+                              int next = (hvacState.optInt("seatHeatR", 0) + 1) % 4;
+                              hvacState.put("seatHeatR", next);
+                              sendCanbusCmd(12, next);
+                          } else if ("tempL".equals(key)) {
+                              String raw = hvacState.optString("tempLeft", "21.0°").replace("°", "");
+                              float cur = 20.5f;
+                              try { cur = Float.parseFloat(raw); } catch (Exception ignored) {}
+                              float next = Math.max(16.0f, Math.min(30.0f, cur + (delta * 0.5f)));
+                              hvacState.put("tempLeft", next <= 16.0f ? "LO" : (next >= 30.0f ? "HI" : String.format(Locale.US, "%.1f°", next)));
+                              sendCanbusCmd(8, delta > 0 ? 1 : 0);
+                          } else if ("tempR".equals(key)) {
+                              String raw = hvacState.optString("tempRight", "21.0°").replace("°", "");
+                              float cur = 20.5f;
+                              try { cur = Float.parseFloat(raw); } catch (Exception ignored) {}
+                              float next = Math.max(16.0f, Math.min(30.0f, cur + (delta * 0.5f)));
+                              hvacState.put("tempRight", next <= 16.0f ? "LO" : (next >= 30.0f ? "HI" : String.format(Locale.US, "%.1f°", next)));
+                              sendCanbusCmd(9, delta > 0 ? 1 : 0);
                           }
-                          "ac" -> {
-                              val next = !hvacState.optBoolean("ac", true)
-                              hvacState.put("ac", next)
-                              sendFytCanbusCmd(2, if (next) 1 else 0)
-                          }
-                          "cycle" -> {
-                              val next = !hvacState.optBoolean("inOutCycle", true)
-                              hvacState.put("inOutCycle", next)
-                              sendFytCanbusCmd(3, if (next) 1 else 0)
-                          }
-                          "frontDef" -> {
-                              val next = !hvacState.optBoolean("frontDefrost", false)
-                              hvacState.put("frontDefrost", next)
-                              sendFytCanbusCmd(5, if (next) 1 else 0)
-                          }
-                          "rearDef" -> {
-                              val next = !hvacState.optBoolean("rearDefrost", false)
-                              hvacState.put("rearDefrost", next)
-                              sendFytCanbusCmd(6, if (next) 1 else 0)
-                          }
-                          "seatL" -> {
-                              val next = (hvacState.optInt("seatHeatL", 0) + 1) % 4
-                              hvacState.put("seatHeatL", next)
-                              sendFytCanbusCmd(11, next)
-                          }
-                          "seatR" -> {
-                              val next = (hvacState.optInt("seatHeatR", 0) + 1) % 4
-                              hvacState.put("seatHeatR", next)
-                              sendFytCanbusCmd(12, next)
-                          }
-                          "tempL" -> {
-                              val cur = hvacState.optString("tempLeft", "21.0°").replace("°", "").toFloatOrNull() ?: 20.5f
-                              val next = (cur + (delta * 0.5f)).coerceIn(16.0f, 30.0f)
-                              hvacState.put("tempLeft", if (next <= 16.0f) "LO" else if (next >= 30.0f) "HI" else String.format("%.1f°", next))
-                              sendFytCanbusCmd(8, if (delta > 0) 1 else 0)
-                          }
-                          "tempR" -> {
-                              val cur = hvacState.optString("tempRight", "21.0°").replace("°", "").toFloatOrNull() ?: 20.5f
-                              val next = (cur + (delta * 0.5f)).coerceIn(16.0f, 30.0f)
-                              hvacState.put("tempRight", if (next <= 16.0f) "LO" else if (next >= 30.0f) "HI" else String.format("%.1f°", next))
-                              sendFytCanbusCmd(9, if (delta > 0) 1 else 0)
-                          }
-                      }
-                      pushHvacToUi()
+                      } catch (Exception ignored) {}
+                      pushHvac();
                   }
 
                   @JavascriptInterface
-                  fun saveSlotApp(slotName: String, pkg: String) {
-                      prefs.edit().putString("slot_$slotName", pkg).apply()
-                      Toast.makeText(context, "지정 완료: $pkg", Toast.LENGTH_SHORT).show()
+                  public void saveSlotApp(String slotName, String pkg) {
+                      prefs.edit().putString("slot_" + slotName, pkg).apply();
+                      Toast.makeText(MainActivity.this, "지정 완료: " + pkg, Toast.LENGTH_SHORT).show();
                   }
 
                   @JavascriptInterface
-                  fun launchPackage(pkg: String): Boolean {
-                      return try {
-                          runOnUiThread { pipContainer?.visibility = View.GONE }
-                          val intent = context.packageManager.getLaunchIntentForPackage(pkg)
+                  public boolean launchPackage(String pkg) {
+                      try {
+                          runOnUiThread(() -> pipContainer.setVisibility(View.GONE));
+                          Intent intent = getPackageManager().getLaunchIntentForPackage(pkg);
                           if (intent != null) {
-                              intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                              context.startActivity(intent)
-                              true
-                          } else false
-                      } catch (e: Exception) { false }
-                  }
-
-                  @JavascriptInterface
-                  fun getInstalledApps(): String {
-                      val arr = JSONArray()
-                      try {
-                          val pm = context.packageManager
-                          val mainIntent = Intent(Intent.ACTION_MAIN, null).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
-                          for (info in pm.queryIntentActivities(mainIntent, 0)) {
-                              val pkg = info.activityInfo.packageName
-                              if (pkg == context.packageName) continue
-                              val obj = JSONObject()
-                              obj.put("name", info.loadLabel(pm).toString())
-                              obj.put("pkg", pkg)
-                              arr.put(obj)
+                              intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                              startActivity(intent);
+                              return true;
                           }
-                      } catch (e: Exception) {}
-                      return arr.toString()
+                      } catch (Exception ignored) {}
+                      return false;
                   }
 
                   @JavascriptInterface
-                  fun sendMediaKey(action: String) {
+                  public String getInstalledApps() {
+                      JSONArray arr = new JSONArray();
                       try {
-                          val ctrl = activeController
-                          if (ctrl != null) {
-                              when (action) {
-                                  "prev" -> ctrl.transportControls.skipToPrevious()
-                                  "next" -> ctrl.transportControls.skipToNext()
-                                  "play" -> {
-                                      if (ctrl.playbackState?.state == PlaybackState.STATE_PLAYING) ctrl.transportControls.pause()
-                                      else ctrl.transportControls.play()
+                          PackageManager pm = getPackageManager();
+                          Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
+                          mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+                          for (ResolveInfo info : pm.queryIntentActivities(mainIntent, 0)) {
+                              String pkg = info.activityInfo.packageName;
+                              if (pkg.equals(getPackageName())) continue;
+                              JSONObject obj = new JSONObject();
+                              obj.put("name", info.loadLabel(pm).toString());
+                              obj.put("pkg", pkg);
+                              arr.put(obj);
+                          }
+                      } catch (Exception ignored) {}
+                      return arr.toString();
+                  }
+
+                  @JavascriptInterface
+                  public void sendMediaKey(String action) {
+                      try {
+                          if (activeController != null) {
+                              if ("prev".equals(action)) activeController.getTransportControls().skipToPrevious();
+                              else if ("next".equals(action)) activeController.getTransportControls().skipToNext();
+                              else {
+                                  if (activeController.getPlaybackState() != null && activeController.getPlaybackState().getState() == PlaybackState.STATE_PLAYING) {
+                                      activeController.getTransportControls().pause();
+                                  } else {
+                                      activeController.getTransportControls().play();
                                   }
                               }
-                              return
+                              return;
                           }
-                          val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                          val code = when (action) {
-                              "prev" -> KeyEvent.KEYCODE_MEDIA_PREVIOUS
-                              "next" -> KeyEvent.KEYCODE_MEDIA_NEXT
-                              else -> KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE
-                          }
-                          am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code))
-                          am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code))
-                      } catch (e: Exception) {}
+                          AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                          int code = "prev".equals(action) ? KeyEvent.KEYCODE_MEDIA_PREVIOUS : ("next".equals(action) ? KeyEvent.KEYCODE_MEDIA_NEXT : KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE);
+                          am.dispatchMediaKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, code));
+                          am.dispatchMediaKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, code));
+                      } catch (Exception ignored) {}
                   }
               }
           }
           EOF
 
-          cat << 'EOF' > fyt_final/app/src/main/assets/index.html
+          sed 's/^          //' << 'EOF' > fyt_java/app/src/main/assets/index.html
           <!DOCTYPE html>
           <html lang="ko">
           <head>
@@ -909,7 +979,6 @@ jobs:
               }
               .btn:active { transform: scale(0.95); }
               .btn.active { background: rgba(56,189,248,0.22); border-color: #38bdf8; color: #38bdf8; }
-              .btn.heat-active { background: rgba(249,115,22,0.25); border-color: #f97316; color: #fb923c; }
               .top-bar { height: 42px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; }
               .main-grid { flex: 1; display: grid; grid-template-columns: 58fr 42fr; gap: 8px; min-height: 0; }
               .right-col { display: grid; grid-template-rows: 62fr 38fr; gap: 8px; min-height: 0; }
@@ -1209,11 +1278,11 @@ jobs:
           </html>
           EOF
 
-          cd fyt_final
-          gradle assembleDebug --no-daemon --stacktrace
+          cd fyt_java
+          gradle assembleDebug --no-daemon
 
-      - name: 5. Upload Final Camaro APK
+      - name: 5. Upload Pure Java Camaro APK
         uses: actions/upload-artifact@v4
         with:
-          name: Camaro-FYT7862-Final-Fixed-APK
-          path: fyt_final/app/build/outputs/apk/debug/app-debug.apk
+          name: Camaro-FYT7862-PureJava-APK
+          path: fyt_java/app/build/outputs/apk/debug/app-debug.apk
