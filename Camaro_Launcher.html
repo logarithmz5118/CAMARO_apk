@@ -1,0 +1,2262 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIxMTA3MzI3ODUwODczNTg3Mzg2MCIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzhkZGI4OWE5N2QzOTlkOWJfaW5kZXguaHRtbC0zMTEifSwiZXhwIjoxNzk0NTQ3OTM3LCJpYXQiOjE3OTQ1NDQzMzcsImFsZyI6IlJTMjU2In0.Gpc9_gIOROLow_wZcs4skJ0o_Wp94QgZRmJX2-lWdGFG7H_jP-NZ9Zd669YmJ_xJahxrrLkW727ef_8RtqXQCUSFAxMH-xU2eyFhqDfhAHGVHV2T3DPZSkEUKSnfE2CIeGxkcyWudW5zULfPX74na50h0CuO4bEIGvgcFr8E0C0J9lenjGrZ690KsJtpuhSl1ki8RDbfBKE7aaIetufrrmsl1OuH4TeDz0lt7v1jSIIHTJyxuhxwZRjcppRF6ZY8_hbGoASerUohnUxZ99oy6uds_44HCHzUWaeqsbh7xwmB0hBE_Reu6vtXSkJJr0N79cgQmsV3eyC_iU0zLwRFMQ","c_8ddb89a97d399d9b_index.html-311")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.j=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.i="";var l=0,t=null,r=null,q=[],F=new TextEncoder,G=new TextDecoder;
+c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*16|0;return(f===
+"x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;(g=t)==null||g.postMessage(a)}};
+Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function() {
+  function normalizeSlug(str) {
+    try {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^p{L}p{N}s_-]/gu, '')
+        .replace(/s+/g, '-');
+    } catch (e) {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9s_-]/g, '')
+        .replace(/s+/g, '-');
+    }
+  }
+
+  function findTargetElement(hash) {
+    if (!hash || hash === '#') {
+      return null;
+    }
+    const rawId = hash.startsWith('#') ? hash.slice(1) : hash;
+    let decodedId = rawId;
+    try {
+      decodedId = decodeURIComponent(rawId);
+    } catch (e) {
+      // Ignore URI malformed errors.
+    }
+
+    // 1. Direct ID match (raw and decoded).
+    let target = document.getElementById(rawId) || document.getElementById(decodedId);
+    if (target) {
+      return target;
+    }
+
+    // 2. Name attribute match (<a name="...">).
+    try {
+      if (typeof CSS !== 'undefined' && CSS.escape) {
+        target =
+          document.querySelector('[name="' + CSS.escape(rawId) + '"]') ||
+          document.querySelector('[name="' + CSS.escape(decodedId) + '"]');
+      } else {
+        const namedElements = document.getElementsByName(rawId);
+        if (namedElements && namedElements.length > 0) {
+          return namedElements[0];
+        }
+      }
+    } catch (e) {
+      // Ignore querySelector syntax errors.
+    }
+    if (target) {
+      return target;
+    }
+
+    // 3. Match heading text by slug (for Markdown TOCs where headings lack explicit IDs).
+    const targetSlug = normalizeSlug(decodedId);
+    if (targetSlug) {
+      for (const heading of document.querySelectorAll('h1, h2, h3, h4, h5, h6')) {
+        if (normalizeSlug(heading.textContent || '') === targetSlug) {
+          return heading;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  document.addEventListener('click', function(event) {
+    const target = event.target;
+    const anchor = target && typeof target.closest === 'function' ? target.closest('a') : null;
+    if (!anchor) {
+      return;
+    }
+
+    const href = anchor.getAttribute('href');
+    if (
+      !href ||
+      href.trim().toLowerCase().startsWith('javascript:') ||
+      anchor.hasAttribute('download')
+    ) {
+      return;
+    }
+
+    // Check if the link is an in-page hash / anchor link.
+    if (href.startsWith('#')) {
+      event.preventDefault();
+      const targetElement = findTargetElement(href);
+      if (targetElement) {
+        targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+      return;
+    }
+
+    // Check if the URL has the same origin/pathname but with a hash.
+    try {
+      const url = new URL(anchor.href, window.location.href);
+      if (
+        url.hash &&
+        url.origin === window.location.origin &&
+        url.pathname === window.location.pathname
+      ) {
+        event.preventDefault();
+        const targetElement = findTargetElement(url.hash);
+        if (targetElement) {
+          targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+        return;
+      }
+    } catch (e) {
+      // Fall through if URL parsing fails.
+    }
+
+    // For all external or full navigation links, prevent iframe-level navigation
+    // (which breaks in AGSA WebView or sandboxed iframes) and ensure they open
+    // safely in a new tab/window.
+    if (anchor.target !== '_blank') {
+      event.preventDefault();
+      window.open(anchor.href, '_blank', 'noopener,noreferrer');
+    }
+  }, {capture: true});
+})();</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camaro Custom All-in-One Launcher</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- JSZip for 1-Click In-Browser APK Project ZIP Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Noto+Sans+KR:wght@400;500;700;900&amp;family=JetBrains+Mono:wght@500;700;800&amp;display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-main: #080A0D;
+            --bg-panel: rgba(13, 22, 34, 0.88);
+            --border-glass: rgba(133, 220, 230, 0.16);
+            --accent: #85DCE6;
+            --accent-glow: rgba(133, 220, 230, 0.34);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            background-color: #030508;
+            color: #F8FAFC;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .mono-num {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .headunit-surface {
+            background-color: var(--bg-main);
+            background-image:
+                radial-gradient(circle at 15% 15%, var(--accent-glow) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(19, 34, 48, 0.65) 0%, transparent 50%);
+        }
+
+        .glass-card {
+            background: var(--bg-panel);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border: 1px solid var(--border-glass);
+            box-shadow: 0 10px 28px -8px rgba(0, 0, 0, 0.85), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(133, 220, 230, 0.32);
+        }
+
+        .accent-text { color: var(--accent); }
+        .accent-bg { background-color: var(--accent); color: #050B11; }
+        .accent-border { border-color: var(--accent) !important; }
+        .accent-glow-shadow { box-shadow: 0 0 22px var(--accent-glow); }
+
+        @keyframes spinFan {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .fan-spin {
+            animation: spinFan var(--fan-duration, 1.8s) linear infinite;
+        }
+
+        @keyframes flowStream {
+            0% { stroke-dashoffset: 36; opacity: 0.25; }
+            50% { opacity: 0.95; }
+            100% { stroke-dashoffset: 0; opacity: 0.25; }
+        }
+        .airflow-line {
+            stroke-dasharray: 8 6;
+            animation: flowStream 1.1s linear infinite;
+        }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.25); border-radius: 9999px; }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0px}.left-1\/2{left:50%}.top-14{top:3.5rem}.z-10{z-index:10}.z-20{z-index:20}.z-30{z-index:30}.z-50{z-index:50}.col-span-5{grid-column:span 5 / span 5}.col-span-7{grid-column:span 7 / span 7}.mx-auto{margin-left:auto;margin-right:auto}.my-1{margin-top:0.25rem;margin-bottom:0.25rem}.my-2{margin-top:0.5rem;margin-bottom:0.5rem}.my-4{margin-top:1rem;margin-bottom:1rem}.my-auto{margin-top:auto;margin-bottom:auto}.mb-1{margin-bottom:0.25rem}.ml-0\.5{margin-left:0.125rem}.ml-1{margin-left:0.25rem}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.mt-3{margin-top:0.75rem}.block{display:block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-11{height:2.75rem}.h-12{height:3rem}.h-14{height:3.5rem}.h-2{height:0.5rem}.h-20{height:5rem}.h-24{height:6rem}.h-3{height:0.75rem}.h-3\.5{height:0.875rem}.h-32{height:8rem}.h-36{height:9rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-6{height:1.5rem}.h-7{height:1.75rem}.h-8{height:2rem}.h-9{height:2.25rem}.h-auto{height:auto}.h-full{height:100%}.max-h-\[640px\]{max-height:640px}.max-h-\[680px\]{max-height:680px}.min-h-screen{min-height:100vh}.min-h-0{min-height:0px}.min-h-\[115px\]{min-height:115px}.min-h-\[340px\]{min-height:340px}.w-10{width:2.5rem}.w-11{width:2.75rem}.w-12{width:3rem}.w-14{width:3.5rem}.w-16{width:4rem}.w-2{width:0.5rem}.w-20{width:5rem}.w-3{width:0.75rem}.w-3\.5{width:0.875rem}.w-36{width:9rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-6{width:1.5rem}.w-7{width:1.75rem}.w-8{width:2rem}.w-9{width:2.25rem}.w-\[1px\]{width:1px}.w-full{width:100%}.min-w-0{min-width:0px}.min-w-\[270px\]{min-width:270px}.max-w-\[1060px\]{max-width:1060px}.max-w-\[1140px\]{max-width:1140px}.max-w-\[1360px\]{max-width:1360px}.max-w-\[980px\]{max-width:980px}.max-w-md{max-width:28rem}.flex-1{flex:1 1 0%}.flex-\[38\]{flex:38}.flex-\[62\]{flex:62}.shrink-0{flex-shrink:0}.-translate-x-1\/2{--tw-translate-x:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite}.cursor-pointer{cursor:pointer}.select-all{-webkit-user-select:all;user-select:all}.list-inside{list-style-position:inside}.list-decimal{list-style-type:decimal}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.grid-cols-7{grid-template-columns:repeat(7, minmax(0, 1fr))}.grid-rows-2{grid-template-rows:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.items-baseline{align-items:baseline}.items-stretch{align-items:stretch}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-0\.5{gap:0.125rem}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-none{border-radius:0px}.rounded-xl{border-radius:0.75rem}.rounded-sm{border-radius:0.125rem}.border{border-width:1px}.border-0{border-width:0px}.border-2{border-width:2px}.border-\[4px\]{border-width:4px}.border-\[5px\]{border-width:5px}.border-b{border-bottom-width:1px}.border-r{border-right-width:1px}.border-amber-400\/30{border-color:rgb(251 191 36 / 0.3)}.border-emerald-400\/50{border-color:rgb(52 211 153 / 0.5)}.border-emerald-500\/30{border-color:rgb(16 185 129 / 0.3)}.border-emerald-500\/35{border-color:rgb(16 185 129 / 0.35)}.border-emerald-500\/40{border-color:rgb(16 185 129 / 0.4)}.border-purple-400\/50{border-color:rgb(192 132 252 / 0.5)}.border-red-600{--tw-border-opacity:1;border-color:rgb(220 38 38 / var(--tw-border-opacity, 1))}.border-rose-400\/40{border-color:rgb(251 113 133 / 0.4)}.border-rose-500\/30{border-color:rgb(244 63 94 / 0.3)}.border-rose-500\/40{border-color:rgb(244 63 94 / 0.4)}.border-sky-400\/30{border-color:rgb(56 189 248 / 0.3)}.border-sky-400\/40{border-color:rgb(56 189 248 / 0.4)}.border-slate-800\/90{border-color:rgb(30 41 59 / 0.9)}.border-white\/10{border-color:rgb(255 255 255 / 0.1)}.border-white\/15{border-color:rgb(255 255 255 / 0.15)}.border-white\/20{border-color:rgb(255 255 255 / 0.2)}.border-sky-400{--tw-border-opacity:1;border-color:rgb(56 189 248 / var(--tw-border-opacity, 1))}.bg-\[\#030508\]{--tw-bg-opacity:1;background-color:rgb(3 5 8 / var(--tw-bg-opacity, 1))}.bg-\[\#05080D\]\/80{background-color:rgb(5 8 13 / 0.8)}.bg-\[\#05080D\]\/85{background-color:rgb(5 8 13 / 0.85)}.bg-\[\#070B12\]{--tw-bg-opacity:1;background-color:rgb(7 11 18 / var(--tw-bg-opacity, 1))}.bg-\[\#090F17\]{--tw-bg-opacity:1;background-color:rgb(9 15 23 / var(--tw-bg-opacity, 1))}.bg-\[\#0B131E\]{--tw-bg-opacity:1;background-color:rgb(11 19 30 / var(--tw-bg-opacity, 1))}.bg-\[\#0D1622\]{--tw-bg-opacity:1;background-color:rgb(13 22 34 / var(--tw-bg-opacity, 1))}.bg-\[\#0D1624\]\/95{background-color:rgb(13 22 36 / 0.95)}.bg-\[\#38BDF8\]{--tw-bg-opacity:1;background-color:rgb(56 189 248 / var(--tw-bg-opacity, 1))}.bg-\[\#85DCE6\]{--tw-bg-opacity:1;background-color:rgb(133 220 230 / var(--tw-bg-opacity, 1))}.bg-\[\#F43F5E\]{--tw-bg-opacity:1;background-color:rgb(244 63 94 / var(--tw-bg-opacity, 1))}.bg-\[\#F59E0B\]{--tw-bg-opacity:1;background-color:rgb(245 158 11 / var(--tw-bg-opacity, 1))}.bg-amber-400{--tw-bg-opacity:1;background-color:rgb(251 191 36 / var(--tw-bg-opacity, 1))}.bg-amber-500\/10{background-color:rgb(245 158 11 / 0.1)}.bg-black\/45{background-color:rgb(0 0 0 / 0.45)}.bg-black\/50{background-color:rgb(0 0 0 / 0.5)}.bg-black\/55{background-color:rgb(0 0 0 / 0.55)}.bg-black\/60{background-color:rgb(0 0 0 / 0.6)}.bg-black\/65{background-color:rgb(0 0 0 / 0.65)}.bg-black\/70{background-color:rgb(0 0 0 / 0.7)}.bg-black\/80{background-color:rgb(0 0 0 / 0.8)}.bg-black\/85{background-color:rgb(0 0 0 / 0.85)}.bg-emerald-400{--tw-bg-opacity:1;background-color:rgb(52 211 153 / var(--tw-bg-opacity, 1))}.bg-emerald-500{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.bg-emerald-500\/15{background-color:rgb(16 185 129 / 0.15)}.bg-emerald-500\/20{background-color:rgb(16 185 129 / 0.2)}.bg-emerald-500\/25{background-color:rgb(16 185 129 / 0.25)}.bg-green-500{--tw-bg-opacity:1;background-color:rgb(34 197 94 / var(--tw-bg-opacity, 1))}.bg-purple-500\/25{background-color:rgb(168 85 247 / 0.25)}.bg-rose-500{--tw-bg-opacity:1;background-color:rgb(244 63 94 / var(--tw-bg-opacity, 1))}.bg-rose-500\/15{background-color:rgb(244 63 94 / 0.15)}.bg-rose-500\/20{background-color:rgb(244 63 94 / 0.2)}.bg-sky-500{--tw-bg-opacity:1;background-color:rgb(14 165 233 / var(--tw-bg-opacity, 1))}.bg-sky-500\/10{background-color:rgb(14 165 233 / 0.1)}.bg-sky-500\/15{background-color:rgb(14 165 233 / 0.15)}.bg-sky-500\/20{background-color:rgb(14 165 233 / 0.2)}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-slate-900\/95{background-color:rgb(15 23 42 / 0.95)}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/10{background-color:rgb(255 255 255 / 0.1)}.bg-white\/15{background-color:rgb(255 255 255 / 0.15)}.bg-white\/5{background-color:rgb(255 255 255 / 0.05)}.bg-sky-500\/25{background-color:rgb(14 165 233 / 0.25)}.bg-gradient-to-b{background-image:linear-gradient(to bottom, var(--tw-gradient-stops))}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.bg-gradient-to-tr{background-image:linear-gradient(to top right, var(--tw-gradient-stops))}.from-\[\#0E1520\]{--tw-gradient-from:#0E1520 var(--tw-gradient-from-position);--tw-gradient-to:rgb(14 21 32 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-\[\#0E1826\]{--tw-gradient-from:#0E1826 var(--tw-gradient-from-position);--tw-gradient-to:rgb(14 24 38 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-\[\#132538\]{--tw-gradient-from:#132538 var(--tw-gradient-from-position);--tw-gradient-to:rgb(19 37 56 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-emerald-400{--tw-gradient-from:#34d399 var(--tw-gradient-from-position);--tw-gradient-to:rgb(52 211 153 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-purple-600{--tw-gradient-from:#9333ea var(--tw-gradient-from-position);--tw-gradient-to:rgb(147 51 234 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-slate-900{--tw-gradient-from:#0f172a var(--tw-gradient-from-position);--tw-gradient-to:rgb(15 23 42 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-\[\#0B1521\]{--tw-gradient-to:rgb(11 21 33 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #0B1521 var(--tw-gradient-via-position), var(--tw-gradient-to)}.via-blue-500{--tw-gradient-to:rgb(59 130 246 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #3b82f6 var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-\[\#06090E\]{--tw-gradient-to:#06090E var(--tw-gradient-to-position)}.to-\[\#070B12\]{--tw-gradient-to:#070B12 var(--tw-gradient-to-position)}.to-black{--tw-gradient-to:#000 var(--tw-gradient-to-position)}.to-cyan-400{--tw-gradient-to:#22d3ee var(--tw-gradient-to-position)}.to-green-600{--tw-gradient-to:#16a34a var(--tw-gradient-to-position)}.object-cover{object-fit:cover}.p-0{padding:0px}.p-0\.5{padding:0.125rem}.p-1{padding:0.25rem}.p-2{padding:0.5rem}.p-2\.5{padding:0.625rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.px-0\.5{padding-left:0.125rem;padding-right:0.125rem}.px-1{padding-left:0.25rem;padding-right:0.25rem}.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-4{padding-top:1rem;padding-bottom:1rem}.pb-3{padding-bottom:0.75rem}.pl-1{padding-left:0.25rem}.text-center{text-align:center}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-\[9px\]{font-size:9px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.font-semibold{font-weight:600}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77 / var(--tw-text-opacity, 1))}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36 / var(--tw-text-opacity, 1))}.text-black{--tw-text-opacity:1;color:rgb(0 0 0 / var(--tw-text-opacity, 1))}.text-emerald-200{--tw-text-opacity:1;color:rgb(167 243 208 / var(--tw-text-opacity, 1))}.text-emerald-300{--tw-text-opacity:1;color:rgb(110 231 183 / var(--tw-text-opacity, 1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153 / var(--tw-text-opacity, 1))}.text-purple-200{--tw-text-opacity:1;color:rgb(233 213 255 / var(--tw-text-opacity, 1))}.text-rose-300{--tw-text-opacity:1;color:rgb(253 164 175 / var(--tw-text-opacity, 1))}.text-rose-400{--tw-text-opacity:1;color:rgb(251 113 133 / var(--tw-text-opacity, 1))}.text-sky-200{--tw-text-opacity:1;color:rgb(186 230 253 / var(--tw-text-opacity, 1))}.text-sky-300{--tw-text-opacity:1;color:rgb(125 211 252 / var(--tw-text-opacity, 1))}.text-sky-400{--tw-text-opacity:1;color:rgb(56 189 248 / var(--tw-text-opacity, 1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-950{--tw-text-opacity:1;color:rgb(2 6 23 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.underline{-webkit-text-decoration-line:underline;text-decoration-line:underline}.opacity-0{opacity:0}.opacity-85{opacity:0.85}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_0_80px_rgba\(0\2c 0\2c 0\2c 0\.95\)\]{--tw-shadow:0 0 80px rgba(0,0,0,0.95);--tw-shadow-colored:0 0 80px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_0_90px_rgba\(0\2c 0\2c 0\2c 0\.95\)\]{--tw-shadow:0 0 90px rgba(0,0,0,0.95);--tw-shadow-colored:0 0 90px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_0_8px_var\(--accent-glow\)\]{--tw-shadow:0 0 8px var(--accent-glow);--tw-shadow-colored:0 0 8px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.ring-2{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.ring-white\/40{--tw-ring-color:rgb(255 255 255 / 0.4)}.drop-shadow-\[0_10px_14px_rgba\(0\2c 0\2c 0\2c 0\.95\)\]{--tw-drop-shadow:drop-shadow(0 10px 14px rgba(0,0,0,0.95));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-2xl{--tw-backdrop-blur:blur(40px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-xl{--tw-backdrop-blur:blur(24px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-200{transition-duration:200ms}.hover\:scale-105:hover{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:scale-110:hover{--tw-scale-x:1.1;--tw-scale-y:1.1;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:border-emerald-500\/40:hover{border-color:rgb(16 185 129 / 0.4)}.hover\:bg-amber-300:hover{--tw-bg-opacity:1;background-color:rgb(252 211 77 / var(--tw-bg-opacity, 1))}.hover\:bg-black:hover{--tw-bg-opacity:1;background-color:rgb(0 0 0 / var(--tw-bg-opacity, 1))}.hover\:bg-emerald-500\/20:hover{background-color:rgb(16 185 129 / 0.2)}.hover\:bg-emerald-500\/25:hover{background-color:rgb(16 185 129 / 0.25)}.hover\:bg-purple-500\/40:hover{background-color:rgb(168 85 247 / 0.4)}.hover\:bg-rose-500\/25:hover{background-color:rgb(244 63 94 / 0.25)}.hover\:bg-rose-500\/30:hover{background-color:rgb(244 63 94 / 0.3)}.hover\:bg-rose-500\/35:hover{background-color:rgb(244 63 94 / 0.35)}.hover\:bg-sky-400:hover{--tw-bg-opacity:1;background-color:rgb(56 189 248 / var(--tw-bg-opacity, 1))}.hover\:bg-sky-500\/25:hover{background-color:rgb(14 165 233 / 0.25)}.hover\:bg-sky-500\/30:hover{background-color:rgb(14 165 233 / 0.3)}.hover\:bg-white\/10:hover{background-color:rgb(255 255 255 / 0.1)}.hover\:bg-white\/15:hover{background-color:rgb(255 255 255 / 0.15)}.hover\:bg-white\/20:hover{background-color:rgb(255 255 255 / 0.2)}.hover\:bg-white\/30:hover{background-color:rgb(255 255 255 / 0.3)}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:opacity-90:hover{opacity:0.9}.active\:scale-90:active{--tw-scale-x:.9;--tw-scale-y:.9;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.active\:scale-95:active{--tw-scale-x:.95;--tw-scale-y:.95;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@media (min-width: 640px){.sm\:inline{display:inline}.sm\:min-w-\[320px\]{min-width:320px}.sm\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.sm\:grid-cols-6{grid-template-columns:repeat(6, minmax(0, 1fr))}.sm\:p-5{padding:1.25rem}}@media (min-width: 768px){.md\:flex{display:flex}}@media (min-width: 1024px){.lg\:absolute{position:absolute}.lg\:col-span-4{grid-column:span 4 / span 4}.lg\:col-span-5{grid-column:span 5 / span 5}.lg\:col-span-7{grid-column:span 7 / span 7}.lg\:col-span-8{grid-column:span 8 / span 8}.lg\:mx-0{margin-left:0px;margin-right:0px}.lg\:h-\[124px\]{height:124px}.lg\:h-\[750px\]{height:750px}.lg\:min-h-0{min-height:0px}.lg\:w-\[230px\]{width:230px}.lg\:w-\[235px\]{width:235px}.lg\:grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}.lg\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.lg\:flex-row{flex-direction:row}.lg\:items-center{align-items:center}.lg\:overflow-hidden{overflow:hidden}.lg\:rounded-\[28px\]{border-radius:28px}.lg\:border-\[3px\]{border-width:3px}.lg\:p-3{padding:0.75rem}}@media (min-width: 1280px){.xl\:inline{display:inline}}</style></head>
+<body class="min-h-screen flex items-center justify-center p-0 lg:p-3 bg-[#030508]">
+
+    <!-- 1280x720 Automotive Widescreen Head Unit Frame -->
+    <div id="headunit-root" class="headunit-surface relative w-full max-w-[1360px] min-h-screen lg:min-h-0 lg:h-[750px] rounded-none lg:rounded-[28px] overflow-hidden flex flex-col border-0 lg:border-[3px] border-slate-800/90 shadow-[0_0_90px_rgba(0,0,0,0.95)]">
+
+        <!-- ==================== CLEAN TOP STATUS BAR (NO RS / 2015 LOGOS) ==================== -->
+        <header class="h-10 px-4 flex items-center justify-between border-b border-white/10 bg-[#05080D]/80 backdrop-blur-md z-30 shrink-0">
+            <!-- Left: Clock & Minimal One-Line Weather -->
+            <div class="flex items-center gap-3">
+                <div class="flex items-baseline gap-1.5">
+                    <span id="top-clock" class="mono-num text-base font-extrabold tracking-tight text-white">01:32</span>
+                    <span id="top-ampm" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/10 text-slate-300">PM</span>
+                </div>
+
+                <div class="h-3.5 w-[1px] bg-white/15"></div>
+
+                <!-- Minimal Weather & Fine Dust -->
+                <div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[11px] text-slate-300">
+                    <svg class="w-3.5 h-3.5 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41"></path>
+                    </svg>
+                    <span class="font-medium">대구</span>
+                    <span class="mono-num font-bold text-white">15.5°C</span>
+                    <span class="text-slate-500 hidden sm:inline">·</span>
+                    <span class="text-emerald-400 font-semibold hidden sm:inline">미세 좋음</span>
+                </div>
+            </div>
+
+            <!-- Center-Right: 1-Click Direct Download & Beginner Guide Buttons -->
+            <div class="flex items-center gap-1.5">
+                <button onclick="downloadStandaloneHtml()" class="px-2.5 py-1 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 text-[11px] font-extrabold flex items-center gap-1 shadow-md transition active:scale-95" title="클릭하면 Camaro_Launcher.html 파일을 즉시 다운로드합니다">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>📥 HTML 런처 다운</span>
+                </button>
+
+                <button onclick="downloadApkProjectZip()" id="btn-zip-dl" class="px-2.5 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-[11px] font-extrabold flex items-center gap-1 shadow-md transition active:scale-95" title="클릭하면 APK 자동 제작용 ZIP 파일을 즉시 다운로드합니다">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    <span>📦 APK 제작용 ZIP 다운</span>
+                </button>
+
+                <button onclick="openInstallGuideModal()" class="px-2.5 py-1 rounded-lg bg-purple-500/25 hover:bg-purple-500/40 border border-purple-400/50 text-purple-200 text-[11px] font-extrabold flex items-center gap-1 transition active:scale-95">
+                    <span>❓ 설치 방법 안내</span>
+                </button>
+            </div>
+
+            <!-- Right: Quick Android App Drawer, Stock Android Home Return, Theme & Status Icons -->
+            <div class="flex items-center gap-2">
+                <!-- Android App Drawer Quick Button -->
+                <button onclick="openAppDrawer()" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/15 border border-white/15 text-[11px] font-bold text-white flex items-center gap-1.5 transition active:scale-95">
+                    <svg class="w-3.5 h-3.5 accent-text" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="3" y="3" width="4" height="4" rx="1"></rect><rect x="10" y="3" width="4" height="4" rx="1"></rect><rect x="17" y="3" width="4" height="4" rx="1"></rect>
+                        <rect x="3" y="10" width="4" height="4" rx="1"></rect><rect x="10" y="10" width="4" height="4" rx="1"></rect><rect x="17" y="10" width="4" height="4" rx="1"></rect>
+                        <rect x="3" y="17" width="4" height="4" rx="1"></rect><rect x="10" y="17" width="4" height="4" rx="1"></rect><rect x="17" y="17" width="4" height="4" rx="1"></rect>
+                    </svg>
+                    <span class="hidden xl:inline">앱 서랍</span>
+                </button>
+
+                <!-- Return to Stock Android Home Button -->
+                <button onclick="openStockHomeModal()" class="px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/35 text-[11px] font-bold text-emerald-300 flex items-center gap-1.5 transition active:scale-95">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span class="hidden xl:inline">순정 홈</span>
+                </button>
+
+                <!-- Ambient Theme Swatches -->
+                <div class="hidden md:flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-full border border-white/10">
+                    <button onclick="setAccent('#85DCE6', 'rgba(133,220,230,0.34)')" class="w-3.5 h-3.5 rounded-full bg-[#85DCE6] ring-2 ring-white/40 hover:scale-110 transition" title="아이스 시안"></button>
+                    <button onclick="setAccent('#38BDF8', 'rgba(56,189,248,0.34)')" class="w-3.5 h-3.5 rounded-full bg-[#38BDF8] hover:scale-110 transition" title="스카이 블루"></button>
+                    <button onclick="setAccent('#F43F5E', 'rgba(244,63,94,0.34)')" class="w-3.5 h-3.5 rounded-full bg-[#F43F5E] hover:scale-110 transition" title="크림슨 레드"></button>
+                    <button onclick="setAccent('#F59E0B', 'rgba(245,158,11,0.34)')" class="w-3.5 h-3.5 rounded-full bg-[#F59E0B] hover:scale-110 transition" title="앰버 골드"></button>
+                </div>
+
+                <!-- Status Indicators -->
+                <div class="flex items-center gap-2 text-slate-300 pl-1">
+                    <!-- Bluetooth SVG -->
+                    <svg class="w-3.5 h-3.5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"></polyline></svg>
+                    <!-- Wi-Fi SVG -->
+                    <svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
+                    <!-- GPS SVG -->
+                    <span class="text-[10px] font-extrabold mono-num px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">GPS</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- ==================== MAIN BODY: LEFT SIDEBAR DOCK + RIGHT CONTENT AREA ==================== -->
+        <div class="flex-1 flex overflow-hidden relative">
+
+            <!-- SLIM LEFT NAVIGATION DOCK (Clean functional icons only, NO RS/2015 badges) -->
+            <aside class="w-16 bg-[#05080D]/85 backdrop-blur-xl border-r border-white/10 flex flex-col items-center justify-between py-2.5 z-20 shrink-0">
+                <!-- Primary Navigation Buttons -->
+                <nav class="flex flex-col items-center gap-2 w-full px-1.5">
+                    <!-- Dashboard Home -->
+                    <button onclick="switchMainView('home')" id="dock-home" class="w-full py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all accent-bg font-bold shadow-lg">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="3" y="3" width="8" height="8" rx="2"></rect><rect x="13" y="3" width="8" height="8" rx="2"></rect>
+                            <rect x="3" y="13" width="8" height="8" rx="2"></rect><rect x="13" y="13" width="8" height="8" rx="2"></rect>
+                        </svg>
+                        <span class="text-[10px] tracking-tight">대시보드</span>
+                    </button>
+
+                    <!-- CarPlay Fullscreen -->
+                    <button onclick="switchMainView('carplay')" id="dock-carplay" class="w-full py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-white hover:bg-white/10 transition-all">
+                        <svg class="w-5 h-5 text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"></path>
+                        </svg>
+                        <span class="text-[10px] font-semibold tracking-tight">카플레이</span>
+                    </button>
+
+                    <!-- Android App Drawer (앱 서랍) -->
+                    <button onclick="openAppDrawer()" id="dock-apps" class="w-full py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-white hover:bg-white/10 transition-all">
+                        <svg class="w-5 h-5 accent-text" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="5" cy="5" r="2"></circle><circle cx="12" cy="5" r="2"></circle><circle cx="19" cy="5" r="2"></circle>
+                            <circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle>
+                            <circle cx="5" cy="19" r="2"></circle><circle cx="12" cy="19" r="2"></circle><circle cx="19" cy="19" r="2"></circle>
+                        </svg>
+                        <span class="text-[10px] font-semibold tracking-tight">앱 서랍</span>
+                    </button>
+
+                    <!-- Vehicle Detail -->
+                    <button onclick="switchMainView('vehicle')" id="dock-vehicle" class="w-full py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-white hover:bg-white/10 transition-all">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 16H9m10 0h3v-3.15a1 1 0 0 0-.84-.99L16 11l-2.7-3.6a1 1 0 0 0-.8-.4H5.24a2 2 0 0 0-1.8 1.1l-.8 1.63A6 6 0 0 0 2 12.42V16h2"></path>
+                            <circle cx="6.5" cy="16.5" r="2.5"></circle><circle cx="16.5" cy="16.5" r="2.5"></circle>
+                        </svg>
+                        <span class="text-[10px] font-semibold tracking-tight">내차정보</span>
+                    </button>
+                </nav>
+
+                <!-- Bottom: Stock Android Home Return Button (순정 홈) -->
+                <div class="flex flex-col items-center gap-2 w-full px-1.5">
+                    <button onclick="openStockHomeModal()" class="w-full py-2.5 rounded-2xl bg-white/5 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-500/40 flex flex-col items-center justify-center gap-1 text-emerald-300 transition-all" title="원래 안드로이드 홈 화면으로 돌아가기">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                        <span class="text-[10px] font-bold tracking-tight">순정 홈</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- ==================== WORKSPACE AREA ==================== -->
+            <main class="flex-1 overflow-y-auto lg:overflow-hidden p-2.5 flex flex-col gap-2.5 relative">
+
+                <!-- ==================== 1. MAIN DASHBOARD VIEW ==================== -->
+                <section id="view-home" class="flex-1 flex flex-col gap-2.5 min-h-0">
+
+                    <!-- TOP AREA (76% Height): Left 4:3 Horizontal CarPlay (7 Cols) + Right Camaro & Compact Music (5 Cols) -->
+                    <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-2.5 min-h-0">
+
+                        <!-- ==================== LEFT: 4:3 WIDE HORIZONTAL APPLE CARPLAY (7 Cols) ==================== -->
+                        <div class="lg:col-span-7 glass-card rounded-2xl p-2.5 flex flex-col gap-2 relative overflow-hidden min-h-[340px]">
+                            <!-- CarPlay Header Bar -->
+                            <div class="flex items-center justify-between px-1 shrink-0">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-400 to-green-600 text-black flex items-center justify-center shadow">
+                                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.68-1.1 1.79-.96 2.84 1.04.08 2.08-.52 2.72-1.3"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <h2 class="text-sm font-extrabold text-white tracking-tight">Apple CarPlay</h2>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">무선 연결됨</span>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-1.5">
+                                    <button onclick="selectNavApp('TMAP')" id="nav-chip-TMAP" class="px-2.5 py-1 rounded-lg bg-emerald-500/25 border border-emerald-400/50 text-emerald-200 text-[11px] font-bold transition">T-MAP</button>
+                                    <button onclick="selectNavApp('KAKAO')" id="nav-chip-KAKAO" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-[11px] font-bold transition">카카오내비</button>
+                                    <button onclick="selectNavApp('NAVER')" id="nav-chip-NAVER" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-[11px] font-bold transition">네이버지도</button>
+                                    <button onclick="switchMainView('carplay')" class="ml-1 px-2.5 py-1 rounded-lg accent-bg text-[11px] font-extrabold flex items-center gap-1 shadow hover:opacity-90 transition">
+                                        <span>전체화면</span>
+                                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 4:3 Wide Horizontal CarPlay Screen Frame -->
+                            <div class="flex-1 rounded-xl bg-[#090F17] border border-white/15 overflow-hidden flex shadow-inner relative">
+                                <!-- CarPlay iOS Left Status/App Dock -->
+                                <div class="w-12 bg-black/80 border-r border-white/10 flex flex-col items-center justify-between py-2.5 shrink-0 z-10">
+                                    <div class="text-center">
+                                        <span id="carplay-clock" class="mono-num text-[11px] font-bold text-white block">01:32</span>
+                                        <span class="text-[9px] text-emerald-400 font-extrabold">5G</span>
+                                    </div>
+
+                                    <div class="flex flex-col gap-2">
+                                        <button onclick="showToast('T-MAP 내비게이션 화면')" class="w-8 h-8 rounded-xl bg-emerald-500 text-black flex items-center justify-center shadow">
+                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"></path></svg>
+                                        </button>
+                                        <button onclick="nextTrack()" class="w-8 h-8 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow" title="Apple Music">
+                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                                        </button>
+                                        <button onclick="showToast('iPhone 통화 최근 목록')" class="w-8 h-8 rounded-xl bg-green-500 text-white flex items-center justify-center shadow" title="전화">
+                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                        </button>
+                                        <button onclick="showToast('Siri 음성 명령 대기 중...')" class="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 via-blue-500 to-cyan-400 text-white flex items-center justify-center shadow" title="Siri">
+                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line></svg>
+                                        </button>
+                                    </div>
+
+                                    <button onclick="openAppDrawer()" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white" title="CarPlay 앱 목록">
+                                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                                            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <!-- Horizontal 4:3 Map & Split Guidance Canvas -->
+                                <div class="flex-1 relative flex flex-col justify-between p-3 overflow-hidden">
+                                    <!-- Wide Widescreen Vector Navigation Map -->
+                                    <svg viewBox="0 0 700 420" preserveAspectRatio="xMidYMid slice" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
+                                        <rect width="700" height="420" fill="#0B131E"></rect>
+                                        <!-- City Blocks & River -->
+                                        <path d="M 0 310 Q 260 280 700 350 L 700 420 L 0 420 Z" fill="#0E2238" opacity="0.65"></path>
+                                        <!-- Major Roads -->
+                                        <path d="M -20 110 L 720 180 M -20 270 L 720 220 M 180 -20 L 240 440 M 490 -20 L 430 440 M 340 -20 L 360 440" stroke="#192536" stroke-width="24" fill="none"></path>
+                                        <path d="M -20 110 L 720 180 M -20 270 L 720 220 M 180 -20 L 240 440 M 490 -20 L 430 440" stroke="#24344B" stroke-width="2" stroke-dasharray="10 10" fill="none"></path>
+                                        <!-- Active Navigation Route (Wide 4:3 Path) -->
+                                        <path d="M 215 430 L 205 255 L 452 238 L 480 35" stroke="#0284C7" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.45"></path>
+                                        <path d="M 215 430 L 205 255 L 452 238 L 480 35" stroke="#85DCE6" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+                                        <!-- Turn Arrow Highlight -->
+                                        <circle cx="452" cy="238" r="9" fill="#10B981" stroke="#ffffff" stroke-width="2.5"></circle>
+                                        <!-- Current Vehicle Position Puck -->
+                                        <circle cx="205" cy="255" r="22" fill="#85DCE6" fill-opacity="0.22"></circle>
+                                        <circle cx="205" cy="255" r="9" fill="#85DCE6" stroke="#ffffff" stroke-width="3"></circle>
+                                    </svg>
+
+                                    <!-- Top Row: Turn-by-Turn Card + Speed Camera Limit Badge -->
+                                    <div class="relative z-10 flex items-start justify-between gap-3">
+                                        <!-- Turn Guidance Box -->
+                                        <div class="bg-[#0D1624]/95 backdrop-blur-md border border-white/15 rounded-2xl p-3 flex items-center gap-3 shadow-xl min-w-[270px] sm:min-w-[320px]">
+                                            <div class="w-11 h-11 rounded-xl bg-emerald-500 text-black flex items-center justify-center shrink-0 shadow">
+                                                <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="15 14 20 9 15 4"></polyline><path d="M4 20v-7a4 4 0 0 1 4-4h12"></path>
+                                                </svg>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <div class="flex items-baseline gap-2">
+                                                    <span class="mono-num text-2xl font-black text-emerald-400">320m</span>
+                                                    <span class="text-sm font-extrabold text-white truncate">범어네거리 우회전</span>
+                                                </div>
+                                                <p id="active-nav-subtitle" class="text-[11px] text-slate-300 truncate mt-0.5">T-MAP 실시간 경로 · 동대구로 방면</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Speed Limit Sign & Current Lane Info -->
+                                        <div class="flex items-center gap-2">
+                                            <div class="bg-[#0D1624]/95 backdrop-blur-md border border-white/15 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 shadow-lg">
+                                                <span class="text-[10px] font-bold text-slate-400">차선</span>
+                                                <span class="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono text-xs font-extrabold">1 · 2 · <u class="text-emerald-400">3</u></span>
+                                            </div>
+                                            <div class="w-12 h-12 rounded-full bg-white text-black font-black mono-num text-sm flex items-center justify-center border-[4px] border-red-600 shadow-xl shrink-0">
+                                                60
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Bottom Row: Next Turn Pill & Horizontal ETA Bar -->
+                                    <div class="relative z-10 flex flex-wrap items-end justify-between gap-2">
+                                        <div class="bg-black/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/15 flex items-center gap-2 text-xs shadow">
+                                            <svg class="w-4 h-4 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+                                            <span class="text-slate-200">이어서 <strong class="mono-num text-white">1.4km</strong> 직진 주행</span>
+                                        </div>
+
+                                        <div class="bg-[#0D1624]/95 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/15 flex items-center gap-4 text-xs shadow-xl">
+                                            <div>
+                                                <span class="text-[10px] text-slate-400 block">도착 예정</span>
+                                                <span class="mono-num text-xs font-extrabold text-emerald-400">01:33 PM</span>
+                                            </div>
+                                            <div class="h-5 w-[1px] bg-white/10"></div>
+                                            <div>
+                                                <span class="text-[10px] text-slate-400 block">남은 시간</span>
+                                                <span class="mono-num text-xs font-extrabold text-white">18분</span>
+                                            </div>
+                                            <div class="h-5 w-[1px] bg-white/10"></div>
+                                            <div>
+                                                <span class="text-[10px] text-slate-400 block">남은 거리</span>
+                                                <span class="mono-num text-xs font-extrabold accent-text">5.8 km</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ==================== RIGHT COLUMN (5 Cols): TOP MY CAR STATUS (62%) + BOTTOM COMPACT MUSIC (38%) ==================== -->
+                        <div class="lg:col-span-5 flex flex-col gap-2.5 min-h-0">
+
+                            <!-- 1) TOP RIGHT CARD (~62% height): 2015 BLACK CAMARO STATUS (Zero wasted space) -->
+                            <div class="flex-[62] glass-card rounded-2xl p-2.5 flex flex-col justify-between gap-2 relative overflow-hidden">
+                                <!-- Header: Vehicle Name & Interactive Gear Selector (P R N D M) -->
+                                <div class="flex items-center justify-between px-0.5 shrink-0">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                        <h3 class="text-xs font-extrabold text-white tracking-tight">내 차 상태 · CAMARO BLACK</h3>
+                                    </div>
+
+                                    <!-- Gear Selector -->
+                                    <div class="flex items-center bg-black/70 p-0.5 rounded-lg border border-white/15 gap-0.5">
+                                        <button onclick="setGear('P')" id="gear-P" class="w-6 h-5 rounded text-[10px] mono-num font-bold text-slate-400 transition">P</button>
+                                        <button onclick="setGear('R')" id="gear-R" class="w-6 h-5 rounded text-[10px] mono-num font-bold text-slate-400 transition">R</button>
+                                        <button onclick="setGear('N')" id="gear-N" class="w-6 h-5 rounded text-[10px] mono-num font-bold text-slate-400 transition">N</button>
+                                        <button onclick="setGear('D')" id="gear-D" class="w-6 h-5 rounded text-[10px] mono-num font-extrabold accent-bg transition">D</button>
+                                        <button onclick="setGear('M')" id="gear-M" class="w-6 h-5 rounded text-[10px] mono-num font-bold text-slate-400 transition">M</button>
+                                    </div>
+                                </div>
+
+                                <!-- Middle Core: Black Camaro Graphic + Speedometer (Left 7 Cols) & 4-Wheel TPMS Grid (Right 5 Cols) -->
+                                <div class="flex-1 grid grid-cols-12 gap-2 min-h-[115px]">
+                                    <!-- Black 2015 Camaro Visual Card -->
+                                    <div class="col-span-7 rounded-xl bg-gradient-to-b from-[#0E1520] to-[#06090E] border border-white/15 relative overflow-hidden flex flex-col justify-between p-2.5">
+                                        <!-- Custom Photo Image (Hidden until user uploads or fallback SVG below) -->
+                                        <img id="camaro-custom-img" src="" alt="My Black Camaro" class="hidden absolute inset-0 w-full h-full object-cover opacity-85">
+
+                                        <!-- Built-in Sleek Black 2015 Camaro Vector Illustration (Never breaks, pure black muscle coupe) -->
+                                        <svg id="camaro-svg-art" viewBox="0 0 320 140" class="w-full h-24 my-auto drop-shadow-[0_10px_14px_rgba(0,0,0,0.95)]">
+                                            <defs>
+                                                <linearGradient id="blackBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                    <stop offset="0%" stop-color="#262B33"></stop>
+                                                    <stop offset="45%" stop-color="#0E1116"></stop>
+                                                    <stop offset="100%" stop-color="#040507"></stop>
+                                                </linearGradient>
+                                                <linearGradient id="glassTint" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                    <stop offset="0%" stop-color="#334155"></stop>
+                                                    <stop offset="100%" stop-color="#090D14"></stop>
+                                                </linearGradient>
+                                            </defs>
+                                            <!-- Floor Shadow -->
+                                            <ellipse cx="160" cy="118" rx="138" ry="10" fill="rgba(0,0,0,0.85)"></ellipse>
+                                            <!-- 2015 Camaro Muscle Coupe Silhouette -->
+                                            <path d="M 22 92 L 32 68 L 88 58 L 136 34 L 222 35 L 266 58 L 298 66 L 302 96 L 284 104 L 36 104 Z" fill="url(#blackBodyGrad)" stroke="#475569" stroke-width="1.5"></path>
+                                            <!-- Greenhouse / Tinted Windows -->
+                                            <path d="M 96 57 L 138 38 L 214 39 L 248 57 Z" fill="url(#glassTint)" stroke="#64748B" stroke-width="1"></path>
+                                            <!-- Aggressive Side Shoulder Crease -->
+                                            <path d="M 34 73 L 185 68 L 294 72" stroke="#85DCE6" stroke-width="1.2" stroke-opacity="0.45" fill="none"></path>
+                                            <!-- Iconic Halo LED Headlamp Glow -->
+                                            <path d="M 24 76 L 42 74" stroke="#85DCE6" stroke-width="3.5" stroke-linecap="round"></path>
+                                            <!-- Rear Taillight Glow -->
+                                            <path d="M 294 70 L 300 70" stroke="#F43F5E" stroke-width="3.5" stroke-linecap="round"></path>
+                                            <!-- Front & Rear Dark Alloy Wheels -->
+                                            <circle cx="76" cy="102" r="21" fill="#090B0E" stroke="#475569" stroke-width="3"></circle>
+                                            <circle cx="76" cy="102" r="13" fill="#111827" stroke="#64748B" stroke-width="1.5" stroke-dasharray="4 3"></circle>
+                                            <circle cx="246" cy="102" r="21" fill="#090B0E" stroke="#475569" stroke-width="3"></circle>
+                                            <circle cx="246" cy="102" r="13" fill="#111827" stroke="#64748B" stroke-width="1.5" stroke-dasharray="4 3"></circle>
+                                        </svg>
+
+                                        <!-- Top Overlay: Live Speed & Upload Photo Trigger -->
+                                        <div class="relative z-10 flex items-center justify-between">
+                                            <div class="flex items-baseline gap-1 bg-black/65 px-2 py-0.5 rounded-lg border border-white/10">
+                                                <span id="camaro-speed" class="mono-num text-xl font-black text-white leading-none">72</span>
+                                                <span class="text-[10px] font-bold accent-text">km/h</span>
+                                            </div>
+                                            <label class="cursor-pointer px-2 py-0.5 rounded-lg bg-black/70 hover:bg-black text-[10px] font-bold text-slate-300 border border-white/15 flex items-center gap-1 transition">
+                                                <svg class="w-3 h-3 accent-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                                                <span>내차사진</span>
+                                                <input type="file" accept="image/*" class="hidden" onchange="uploadCamaroPhoto(event)">
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4-Wheel Individual TPMS Pressure Grid (Right 5 Cols) -->
+                                    <div class="col-span-5 grid grid-cols-2 grid-rows-2 gap-1.5 text-center">
+                                        <div class="bg-black/55 rounded-xl border border-white/10 flex flex-col items-center justify-center p-1">
+                                            <span class="text-[10px] text-slate-400 font-bold">전륜 좌 (FL)</span>
+                                            <span class="mono-num text-sm font-black accent-text">36<span class="text-[9px] text-slate-300 ml-0.5">psi</span></span>
+                                        </div>
+                                        <div class="bg-black/55 rounded-xl border border-white/10 flex flex-col items-center justify-center p-1">
+                                            <span class="text-[10px] text-slate-400 font-bold">전륜 우 (FR)</span>
+                                            <span class="mono-num text-sm font-black accent-text">36<span class="text-[9px] text-slate-300 ml-0.5">psi</span></span>
+                                        </div>
+                                        <div class="bg-black/55 rounded-xl border border-white/10 flex flex-col items-center justify-center p-1">
+                                            <span class="text-[10px] text-slate-400 font-bold">후륜 좌 (RL)</span>
+                                            <span class="mono-num text-sm font-black accent-text">37<span class="text-[9px] text-slate-300 ml-0.5">psi</span></span>
+                                        </div>
+                                        <div class="bg-black/55 rounded-xl border border-white/10 flex flex-col items-center justify-center p-1">
+                                            <span class="text-[10px] text-slate-400 font-bold">후륜 우 (RR)</span>
+                                            <span class="mono-num text-sm font-black accent-text">37<span class="text-[9px] text-slate-300 ml-0.5">psi</span></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Bottom Row: 4 Essential Vehicle Telemetry Pills (Zero empty margin) -->
+                                <div class="grid grid-cols-4 gap-1.5 shrink-0">
+                                    <div class="bg-black/60 rounded-xl py-1.5 px-2 border border-white/10 flex flex-col items-center justify-center">
+                                        <span class="text-[9px] text-slate-400 font-semibold">배터리 전압</span>
+                                        <span class="mono-num text-xs font-extrabold text-emerald-400">14.3V</span>
+                                    </div>
+                                    <div class="bg-black/60 rounded-xl py-1.5 px-2 border border-white/10 flex flex-col items-center justify-center">
+                                        <span class="text-[9px] text-slate-400 font-semibold">수온 / 유온</span>
+                                        <span class="mono-num text-xs font-extrabold text-amber-300">89°C</span>
+                                    </div>
+                                    <div class="bg-black/60 rounded-xl py-1.5 px-2 border border-white/10 flex flex-col items-center justify-center">
+                                        <span class="text-[9px] text-slate-400 font-semibold">오일 수명</span>
+                                        <span class="mono-num text-xs font-extrabold accent-text">78%</span>
+                                    </div>
+                                    <button onclick="toggleDoorStatus()" id="camaro-door-tile" class="bg-emerald-500/15 hover:bg-emerald-500/25 rounded-xl py-1.5 px-2 border border-emerald-500/35 flex flex-col items-center justify-center transition">
+                                        <span class="text-[9px] text-slate-300 font-semibold">도어 잠금</span>
+                                        <span id="camaro-door-text" class="text-xs font-extrabold text-emerald-300">잠김</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 2) BOTTOM RIGHT COMPACT CARD (~38% height): CLEAN MUSIC PLAYER (No moving equalizer, tight info + seekbar) -->
+                            <div class="flex-[38] glass-card rounded-2xl p-2.5 flex flex-col justify-between gap-2 relative overflow-hidden">
+                                <!-- Upper Row: Album Art + Track Title/Artist + Playback Buttons -->
+                                <div class="flex items-center justify-between gap-3 flex-1 min-h-0">
+                                    <!-- Album Art & Song Title -->
+                                    <div class="flex items-center gap-3 min-w-0 flex-1">
+                                        <div class="w-14 h-14 rounded-xl overflow-hidden border border-white/15 shrink-0 shadow-md bg-slate-900">
+                                            <img id="album-art" src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&amp;fit=crop&amp;w=300&amp;q=80" onerror="this.src='https://placehold.co/120x120/0f172a/85dce6?text=MUSIC'" alt="Album Art" class="w-full h-full object-cover">
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">MUSIC</span>
+                                                <span id="track-album" class="text-[10px] text-slate-400 truncate">OutRun Synthwave</span>
+                                            </div>
+                                            <h4 id="track-title" class="text-sm font-extrabold text-white truncate mt-0.5">Midnight Black Cruise</h4>
+                                            <p id="track-artist" class="text-xs font-semibold text-slate-300 truncate">Kavinsky &amp; Nightcall</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Compact Transport Buttons (Prev / Play-Pause / Next) -->
+                                    <div class="flex items-center gap-1.5 shrink-0">
+                                        <button onclick="prevTrack()" class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white active:scale-90 transition" title="이전 곡">
+                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2.5"></line></svg>
+                                        </button>
+                                        <button onclick="togglePlay()" class="w-11 h-11 rounded-xl accent-bg flex items-center justify-center shadow-lg active:scale-90 transition" title="재생/일시정지">
+                                            <!-- Pause Icon -->
+                                            <svg id="icon-pause" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"></rect><rect x="14" y="4" width="4" height="16" rx="1"></rect></svg>
+                                            <!-- Play Icon -->
+                                            <svg id="icon-play" class="w-5 h-5 hidden" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+                                        </button>
+                                        <button onclick="nextTrack()" class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white active:scale-90 transition" title="다음 곡">
+                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2.5"></line></svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Bottom Row: Clean Interactive Progress Bar & Timestamps -->
+                                <div class="bg-black/55 px-3 py-1.5 rounded-xl border border-white/10 flex items-center gap-3 shrink-0">
+                                    <span id="track-cur-time" class="mono-num text-[11px] font-bold text-slate-300">01:42</span>
+                                    <div onclick="seekTrack(event)" class="flex-1 h-2 bg-white/15 rounded-full overflow-hidden cursor-pointer relative">
+                                        <div id="track-progress-bar" class="h-full accent-bg rounded-full transition-all" style="width: 46%;"></div>
+                                    </div>
+                                    <span id="track-total-time" class="mono-num text-[11px] font-bold text-slate-400">03:45</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- ==================== BOTTOM FULL-WIDTH HORIZONTAL HVAC BAR (화면 아래쪽에 길게 배치된 공조기 상태 + 동그란 공조기 버튼) ==================== -->
+                    <div class="h-auto lg:h-[124px] glass-card rounded-2xl p-2.5 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-2.5 shrink-0">
+
+                        <!-- 1. Driver Temp & Seat Heater Block -->
+                        <div class="flex items-center justify-between gap-2 bg-black/55 px-3 py-2 rounded-xl border border-white/10 lg:w-[235px] shrink-0">
+                            <button onclick="adjustDriverTemp(-0.5)" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-sky-500/25 border border-white/10 flex items-center justify-center text-sky-300 active:scale-90 transition">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
+                            <div class="text-center">
+                                <span class="text-[10px] font-bold text-slate-400 block">운전석 온도</span>
+                                <span id="bar-driver-temp" class="mono-num text-2xl font-black text-white leading-tight">21.0°</span>
+                                <button onclick="cycleSeat('driverHeat')" class="mt-0.5 px-2 py-0.5 rounded bg-rose-500/20 border border-rose-500/40 text-[10px] font-bold text-rose-300 block mx-auto">
+                                    열선 <span id="bar-seat-l">2단</span>
+                                </button>
+                            </div>
+                            <button onclick="adjustDriverTemp(0.5)" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-rose-500/25 border border-white/10 flex items-center justify-center text-rose-300 active:scale-90 transition">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
+                        </div>
+
+                        <!-- 2. 7-Step Blower Fan Speed Gauge Block -->
+                        <div class="flex flex-col justify-between bg-black/55 px-3 py-2 rounded-xl border border-white/10 lg:w-[230px] shrink-0">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] font-bold text-slate-300 flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5 accent-text fan-spin" viewBox="0 0 24 24" fill="currentColor" style="--fan-duration: 1.56s;">
+                                        <path d="M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0-8C9.5 2 8 4.5 9 7c.5 1.2 1.5 2.2 2.2 3 .4-.8 1-1.9 2.3-2.3C16 7 18.5 5.5 17 3c-.8-1-2.8-1-5-1zm10 10c0-2.5-2.5-4-5-3-1.2.5-2.2 1.5-3 2.2.8.4 1.9 1 2.3 2.3.7 2.5 2.2 5 4.7 3.5 1-.8 1-2.8 1-5zM12 22c2.5 0 4-2.5 3-5-.5-1.2-1.5-2.2-2.2-3-.4.8-1 1.9-2.3 2.3C8 17 5.5 18.5 7 21c.8 1 2.8 1 5 1zM2 12c0 2.5 2.5 4 5 3 1.2-.5 2.2-1.5 3-2.2-.8-.4-1.9-1-2.3-2.3C7 8 5.5 5.5 3 7c-1 .8-1 2.8-1 5z"></path>
+                                    </svg>
+                                    송풍량
+                                </span>
+                                <span class="mono-num text-xs font-extrabold accent-text"><span id="bar-fan-num">3</span>단 / 7단</span>
+                            </div>
+
+                            <div class="flex items-center gap-1.5 my-1">
+                                <button onclick="changeFan(-1)" class="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white active:scale-90 transition">
+                                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                </button>
+                                <div id="bar-fan-bars" class="flex-1 grid grid-cols-7 gap-1 h-6 items-end"><button class="w-full rounded-sm transition accent-bg shadow-[0_0_8px_var(--accent-glow)]" style="height: 40%;"></button><button class="w-full rounded-sm transition accent-bg shadow-[0_0_8px_var(--accent-glow)]" style="height: 50%;"></button><button class="w-full rounded-sm transition accent-bg shadow-[0_0_8px_var(--accent-glow)]" style="height: 60%;"></button><button class="w-full rounded-sm transition bg-white/15 hover:bg-white/30" style="height: 70%;"></button><button class="w-full rounded-sm transition bg-white/15 hover:bg-white/30" style="height: 80%;"></button><button class="w-full rounded-sm transition bg-white/15 hover:bg-white/30" style="height: 90%;"></button><button class="w-full rounded-sm transition bg-white/15 hover:bg-white/30" style="height: 100%;"></button></div>
+                                <button onclick="changeFan(1)" class="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white active:scale-90 transition">
+                                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                </button>
+                            </div>
+
+                            <button onclick="cycleAirflowMode()" class="w-full py-0.5 rounded bg-white/5 hover:bg-white/10 text-[10px] font-bold text-sky-200 text-center transition">
+                                <span id="bar-airflow-label">바람방향: 상체 + 하체</span>
+                            </button>
+                        </div>
+
+                        <!-- 3. Center Quick Climate Function Grid (6 Direct Toggles filling horizontal middle) -->
+                        <div class="flex-1 grid grid-cols-3 sm:grid-cols-6 gap-1.5 h-full">
+                            <button onclick="toggleHvac('ac')" id="bar-btn-ac" class="rounded-xl text-xs font-extrabold border bg-sky-500/25 border-sky-400 text-sky-200 flex flex-col items-center justify-center gap-0.5 py-1.5 transition">
+                                <span class="mono-num text-xs font-black">A/C</span>
+                                <span class="text-[10px]">냉방가동</span>
+                            </button>
+                            <button onclick="toggleHvac('recirc')" id="bar-btn-recirc" class="rounded-xl text-xs font-extrabold border bg-sky-500/25 border-sky-400 text-sky-200 flex flex-col items-center justify-center gap-0.5 py-1.5 transition">
+                                <span class="text-xs font-black">내기순환</span>
+                                <span class="text-[10px]">외기차단</span>
+                            </button>
+                            <button onclick="toggleHvac('maxAc')" id="bar-btn-maxac" class="rounded-xl text-xs font-bold border bg-white/5 border-white/10 text-slate-400 flex flex-col items-center justify-center gap-0.5 py-1.5 transition">
+                                <span class="mono-num text-xs font-black">MAX</span>
+                                <span class="text-[10px]">급속냉방</span>
+                            </button>
+                            <button onclick="toggleHvac('frontDefrost')" id="bar-btn-defrost" class="rounded-xl text-xs font-bold border bg-white/5 border-white/10 text-slate-400 flex flex-col items-center justify-center gap-0.5 py-1.5 transition">
+                                <span class="text-xs font-black">전면성에</span>
+                                <span class="text-[10px]">유리제습</span>
+                            </button>
+                            <button onclick="toggleHvac('rearDefrost')" id="bar-btn-reardef" class="rounded-xl text-xs font-bold border bg-white/5 border-white/10 text-slate-400 flex flex-col items-center justify-center gap-0.5 py-1.5 transition">
+                                <span class="text-xs font-black">뒷유리</span>
+                                <span class="text-[10px]">미러열선</span>
+                            </button>
+                            <button onclick="syncDualTemp()" class="rounded-xl text-xs font-bold border border-white/10 bg-white/5 hover:bg-white/15 text-slate-200 transition flex flex-col items-center justify-center gap-1 py-2">
+                                <span class="mono-num text-xs font-black accent-text">SYNC</span>
+                                <span class="text-[10px]">온도동기</span>
+                            </button>
+                        </div>
+
+                        <!-- 4. Passenger Temp & Seat Heater Block -->
+                        <div class="flex items-center justify-between gap-2 bg-black/55 px-3 py-2 rounded-xl border border-white/10 lg:w-[235px] shrink-0">
+                            <button onclick="adjustPassTemp(-0.5)" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-sky-500/25 border border-white/10 flex items-center justify-center text-sky-300 active:scale-90 transition">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
+                            <div class="text-center">
+                                <span class="text-[10px] font-bold text-slate-400 block">조수석 온도</span>
+                                <span id="bar-pass-temp" class="mono-num text-2xl font-black text-white leading-tight">21.5°</span>
+                                <button onclick="cycleSeat('passHeat')" class="mt-0.5 px-2 py-0.5 rounded bg-white/10 border border-white/15 text-[10px] font-bold text-slate-300 block mx-auto">
+                                    열선 <span id="bar-seat-r">OFF</span>
+                                </button>
+                            </div>
+                            <button onclick="adjustPassTemp(0.5)" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-rose-500/25 border border-white/10 flex items-center justify-center text-rose-300 active:scale-90 transition">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
+                        </div>
+
+                        <!-- 5. DEDICATED ROUND HVAC BUTTON (동그란 공조기 전용 버튼 - 이 버튼을 눌렀을 때만 큰 공조기 화면이 열림) -->
+                        <button onclick="openLargeHvacModal()" title="클릭하여 큰 공조기 화면 열기" class="w-20 h-20 rounded-full bg-gradient-to-br from-[#132538] via-[#0B1521] to-black border-2 accent-border accent-glow-shadow flex flex-col items-center justify-center gap-0.5 hover:scale-105 active:scale-95 transition-all shrink-0 mx-auto lg:mx-0 cursor-pointer">
+                            <svg class="w-6 h-6 accent-text fan-spin" viewBox="0 0 24 24" fill="currentColor" style="--fan-duration: 1.56s;">
+                                <path d="M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0-8C9.5 2 8 4.5 9 7c.5 1.2 1.5 2.2 2.2 3 .4-.8 1-1.9 2.3-2.3C16 7 18.5 5.5 17 3c-.8-1-2.8-1-5-1zm10 10c0-2.5-2.5-4-5-3-1.2.5-2.2 1.5-3 2.2.8.4 1.9 1 2.3 2.3.7 2.5 2.2 5 4.7 3.5 1-.8 1-2.8 1-5zM12 22c2.5 0 4-2.5 3-5-.5-1.2-1.5-2.2-2.2-3-.4.8-1 1.9-2.3 2.3C8 17 5.5 18.5 7 21c.8 1 2.8 1 5 1zM2 12c0 2.5 2.5 4 5 3 1.2-.5 2.2-1.5 3-2.2-.8-.4-1.9-1-2.3-2.3C7 8 5.5 5.5 3 7c-1 .8-1 2.8-1 5z"></path>
+                            </svg>
+                            <span id="orb-temp-text" class="mono-num text-xs font-black text-white leading-none">21.0°</span>
+                            <span class="text-[9px] font-extrabold accent-text tracking-tight">공조기화면</span>
+                        </button>
+
+                    </div>
+
+                </section>
+
+                <!-- ==================== 2. FULLSCREEN CARPLAY VIEW ==================== -->
+                <section id="view-carplay" class="hidden flex-1 flex flex-col">
+                    <div class="glass-card rounded-2xl flex-1 overflow-hidden flex border border-white/20 shadow-2xl">
+                        <div class="w-16 bg-black/85 border-r border-white/10 flex flex-col items-center justify-between py-4">
+                            <div class="text-center">
+                                <span class="mono-num text-xs font-bold text-white">01:15</span>
+                                <div class="text-[9px] text-emerald-400 font-bold mt-0.5">5G</div>
+                            </div>
+                            <button onclick="switchMainView('home')" class="px-2 py-2.5 rounded-2xl accent-bg text-[10px] font-extrabold shadow-lg">
+                                홈 복귀
+                            </button>
+                        </div>
+                        <div class="flex-1 p-5 bg-[#090F17] flex flex-col justify-between">
+                            <div class="flex items-center justify-between">
+                                <h2 class="text-xl font-black text-white">Apple CarPlay 전체화면</h2>
+                                <button onclick="switchMainView('home')" class="px-4 py-2 rounded-xl accent-bg text-xs font-extrabold">런처 대시보드로 복귀</button>
+                            </div>
+                            <div class="my-auto text-center">
+                                <p class="text-slate-300 text-sm">실제 올인원에서는 CarPlay 수신 앱(`Zlink5` / `AutoKit` / `Carlinkit`) 액티비티가 이 영역에 연동됩니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ==================== 3. DETAILED VEHICLE STATUS VIEW ==================== -->
+                <section id="view-vehicle" class="hidden flex-1 flex flex-col">
+                    <div class="glass-card rounded-2xl p-5 flex-1 flex flex-col justify-between">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="text-lg font-extrabold text-white">내 차 상세 상태 (CHEVROLET CAMARO BLACK)</h2>
+                                <p class="text-xs text-slate-400">OBD2 / CANbus 실시간 센서 및 타이어 공기압 모니터링</p>
+                            </div>
+                            <button onclick="switchMainView('home')" class="px-4 py-2 rounded-xl accent-bg text-xs font-extrabold">대시보드 복귀</button>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 my-auto">
+                            <div class="p-5 rounded-2xl bg-white/5 border border-white/10">
+                                <span class="text-xs text-slate-400">배터리 전압</span>
+                                <div class="mono-num text-3xl font-black text-emerald-400 mt-2">14.3 V</div>
+                            </div>
+                            <div class="p-5 rounded-2xl bg-white/5 border border-white/10">
+                                <span class="text-xs text-slate-400">냉각수 수온</span>
+                                <div class="mono-num text-3xl font-black text-amber-300 mt-2">89 °C</div>
+                            </div>
+                            <div class="p-5 rounded-2xl bg-white/5 border border-white/10">
+                                <span class="text-xs text-slate-400">엔진오일 잔여 수명</span>
+                                <div class="mono-num text-3xl font-black accent-text mt-2">78 %</div>
+                            </div>
+                            <div class="p-5 rounded-2xl bg-white/5 border border-white/10">
+                                <span class="text-xs text-slate-400">누적 주행거리</span>
+                                <div class="mono-num text-3xl font-black text-white mt-2">68,420 km</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+
+        <!-- ==================== MODAL 1: LARGE FULLSCREEN HVAC CONTROL (오직 동그란 공조기 버튼을 눌렀을 때만 오픈) ==================== -->
+        <div id="large-hvac-modal" class="hidden fixed lg:absolute inset-0 z-50 bg-black/85 backdrop-blur-2xl flex items-center justify-center p-3 sm:p-5">
+            <div class="w-full max-w-[1140px] h-full max-h-[640px] rounded-3xl bg-gradient-to-b from-[#0E1826] to-[#070B12] border-2 border-white/15 shadow-[0_0_80px_rgba(0,0,0,0.95)] p-5 flex flex-col justify-between relative overflow-hidden">
+                <!-- Header -->
+                <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-2xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center">
+                            <svg class="w-6 h-6 accent-text fan-spin" viewBox="0 0 24 24" fill="currentColor" style="--fan-duration: 1.56s;">
+                                <path d="M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0-8C9.5 2 8 4.5 9 7c.5 1.2 1.5 2.2 2.2 3 .4-.8 1-1.9 2.3-2.3C16 7 18.5 5.5 17 3c-.8-1-2.8-1-5-1zm10 10c0-2.5-2.5-4-5-3-1.2.5-2.2 1.5-3 2.2.8.4 1.9 1 2.3 2.3.7 2.5 2.2 5 4.7 3.5 1-.8 1-2.8 1-5zM12 22c2.5 0 4-2.5 3-5-.5-1.2-1.5-2.2-2.2-3-.4.8-1 1.9-2.3 2.3C8 17 5.5 18.5 7 21c.8 1 2.8 1 5 1zM2 12c0 2.5 2.5 4 5 3 1.2-.5 2.2-1.5 3-2.2-.8-.4-1.9-1-2.3-2.3C7 8 5.5 5.5 3 7c-1 .8-1 2.8-1 5z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-extrabold text-white">전체 공조기 제어 화면 (CLIMATE CONTROL)</h2>
+                            <p class="text-xs text-slate-400">실내 온도 <strong class="mono-num text-white">22.0°C</strong> · 외부 온도 <strong class="mono-num text-amber-300">15.5°C</strong></p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="toggleHvac('power')" class="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/35 border border-rose-500/40 text-rose-300 text-xs font-extrabold transition">
+                            공조 전원 ON/OFF
+                        </button>
+                        <button onclick="closeLargeHvacModal()" class="px-4 py-2 rounded-xl accent-bg text-xs font-extrabold shadow-lg hover:opacity-90 transition">
+                            닫기 ✕
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Center Body -->
+                <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 my-4 items-stretch">
+                    <!-- Left: Dual Temp Dial -->
+                    <div class="lg:col-span-4 bg-black/45 rounded-2xl border border-white/10 p-4 flex flex-col items-center justify-between">
+                        <span class="text-xs font-bold text-slate-300">목표 온도 다이얼 제어</span>
+                        <div class="flex items-center gap-4 my-2">
+                            <button onclick="adjustDriverTemp(-0.5)" class="w-12 h-12 rounded-2xl bg-sky-500/15 hover:bg-sky-500/30 border border-sky-400/40 text-sky-300 text-xl font-black">-</button>
+                            <div class="w-36 h-36 rounded-full border-[5px] accent-border accent-glow-shadow bg-gradient-to-b from-slate-900 to-black flex flex-col items-center justify-center">
+                                <span class="text-[10px] font-bold text-slate-400">TEMP</span>
+                                <div class="flex items-start mt-0.5">
+                                    <span id="modal-temp-val" class="mono-num text-4xl font-black text-white">21.0</span>
+                                    <span class="text-lg font-bold accent-text">°C</span>
+                                </div>
+                            </div>
+                            <button onclick="adjustDriverTemp(0.5)" class="w-12 h-12 rounded-2xl bg-rose-500/15 hover:bg-rose-500/30 border border-rose-400/40 text-rose-300 text-xl font-black">+</button>
+                        </div>
+
+                        <div class="w-full grid grid-cols-2 gap-2">
+                            <button onclick="cycleSeat('driverHeat')" class="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-xs font-bold">
+                                <span>운전석 열선</span>
+                                <span id="modal-seat-l" class="mono-num text-rose-400 font-extrabold">2단</span>
+                            </button>
+                            <button onclick="cycleSeat('passHeat')" class="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-xs font-bold">
+                                <span>조수석 열선</span>
+                                <span id="modal-seat-r" class="mono-num text-slate-400 font-extrabold">OFF</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right: Airflow Direction & 7-Stage Fan Bar -->
+                    <div class="lg:col-span-8 bg-black/45 rounded-2xl border border-white/10 p-4 flex flex-col justify-between">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span class="text-xs font-bold text-slate-300">송풍 방향 선택</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="setAirflow('screen')" id="modal-dir-screen" class="px-3.5 py-2 rounded-xl text-xs font-bold border bg-white/5 border-white/10 text-slate-300 transition">전면 유리</button>
+                                <button onclick="setAirflow('face')" id="modal-dir-face" class="px-3.5 py-2 rounded-xl text-xs font-bold border bg-white/5 border-white/10 text-slate-300 transition">상체 집중</button>
+                                <button onclick="setAirflow('bi')" id="modal-dir-bi" class="px-3.5 py-2 rounded-xl text-xs font-extrabold border accent-bg transition">상체 + 하체</button>
+                                <button onclick="setAirflow('feet')" id="modal-dir-feet" class="px-3.5 py-2 rounded-xl text-xs font-bold border bg-white/5 border-white/10 text-slate-300 transition">하체 (발밑)</button>
+                            </div>
+                        </div>
+
+                        <!-- Animated Airflow Visualization -->
+                        <div class="my-2 flex-1 rounded-2xl bg-[#070B12] border border-white/10 flex items-center justify-center p-3">
+                            <svg viewBox="0 0 500 165" class="w-full h-32">
+                                <defs>
+                                    <linearGradient id="windCool" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#85DCE6" stop-opacity="0.95"></stop>
+                                        <stop offset="100%" stop-color="#85DCE6" stop-opacity="0.08"></stop>
+                                    </linearGradient>
+                                    <linearGradient id="windWarm" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#EF4444" stop-opacity="0.95"></stop>
+                                        <stop offset="100%" stop-color="#F59E0B" stop-opacity="0.08"></stop>
+                                    </linearGradient>
+                                </defs>
+                                <path d="M 35 140 L 95 140 L 140 75 L 220 20 L 450 20" fill="none" stroke="rgba(148,163,184,0.35)" stroke-width="4" stroke-linecap="round"></path>
+                                <path d="M 95 140 L 145 100 L 145 155 L 95 155 Z" fill="rgba(30,41,59,0.8)" stroke="rgba(148,163,184,0.4)" stroke-width="2"></path>
+                                <path d="M 275 50 C 288 50, 292 115, 275 137 L 215 137 C 205 137, 205 153, 215 155 L 292 155 C 306 155, 316 130, 305 50 Z" fill="rgba(30,41,59,0.75)" stroke="#94A3B8" stroke-width="2"></path>
+                                <g id="modal-stream-screen" style="display: none;">
+                                    <path d="M 135 80 Q 175 45 240 28" fill="none" stroke="url(#windCool)" stroke-width="5" stroke-linecap="round" class="airflow-line"></path>
+                                </g>
+                                <g id="modal-stream-face" style="display: block;">
+                                    <path d="M 148 102 Q 215 88 295 78" fill="none" stroke="url(#windCool)" stroke-width="6" stroke-linecap="round" class="airflow-line"></path>
+                                </g>
+                                <g id="modal-stream-feet" style="display: block;">
+                                    <path d="M 145 136 Q 190 156 255 150" fill="none" stroke="url(#windWarm)" stroke-width="5" stroke-linecap="round" class="airflow-line"></path>
+                                </g>
+                            </svg>
+                        </div>
+
+                        <div class="bg-black/60 p-3 rounded-xl border border-white/10 flex items-center justify-between gap-4">
+                            <button onclick="changeFan(-1)" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 font-black">-</button>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="font-bold text-slate-300">송풍 팬 단수</span>
+                                    <span class="mono-num font-black accent-text"><span id="modal-fan-num">3</span>단 / 7단</span>
+                                </div>
+                                <div id="modal-fan-bars" class="grid grid-cols-7 gap-2 h-3"><button class="h-full rounded transition accent-bg"></button><button class="h-full rounded transition accent-bg"></button><button class="h-full rounded transition accent-bg"></button><button class="h-full rounded transition bg-white/15"></button><button class="h-full rounded transition bg-white/15"></button><button class="h-full rounded transition bg-white/15"></button><button class="h-full rounded transition bg-white/15"></button></div>
+                            </div>
+                            <button onclick="changeFan(1)" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 font-black">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== MODAL 2: ANDROID APP DRAWER (안드로이드 설치 앱 서랍) ==================== -->
+        <div id="app-drawer-modal" class="hidden fixed lg:absolute inset-0 z-50 bg-black/85 backdrop-blur-2xl flex items-center justify-center p-4">
+            <div class="w-full max-w-[1060px] rounded-3xl bg-[#0B131E] border-2 border-white/15 p-5 flex flex-col gap-4 shadow-2xl">
+                <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-white">안드로이드 앱 서랍 (All Installed Apps)</h2>
+                        <p class="text-xs text-slate-400">올인원에 설치된 내비게이션, 미디어, OBD2, 시스템 앱으로 바로 진입합니다</p>
+                    </div>
+                    <button onclick="closeAppDrawer()" class="px-4 py-2 rounded-xl accent-bg text-xs font-extrabold">닫기 ✕</button>
+                </div>
+
+                <!-- Installed Apps Grid -->
+                <div id="android-apps-grid" class="grid grid-cols-3 sm:grid-cols-6 gap-3 py-2">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== MODAL 3: RETURN TO STOCK ANDROID HOME (원래 안드로이드 홈 화면 복귀) ==================== -->
+        <div id="stock-home-modal" class="hidden fixed lg:absolute inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4">
+            <div class="w-full max-w-md rounded-3xl bg-[#0D1622] border border-white/20 p-5 flex flex-col gap-4 shadow-2xl text-center">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 flex items-center justify-center mx-auto">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-extrabold text-white">원래 안드로이드 순정 홈으로 이동</h3>
+                    <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                        안드로이드 올인원의 기본 시스템 런처(순정 홈 화면) 또는 안드로이드 시스템 설정으로 즉시 복귀합니다.
+                    </p>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <a href="intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.HOME;end" onclick="showToast('순정 안드로이드 홈 인텐트 호출됨'); closeStockHomeModal();" class="w-full py-2.5 rounded-xl accent-bg text-xs font-extrabold block" target="_blank" rel="noopener noreferrer">
+                        순정 안드로이드 홈 화면 열기 (Android Intent)
+                    </a>
+                    <a href="intent:#Intent;action=android.settings.HOME_SETTINGS;end" onclick="showToast('기본 홈 앱 변경 설정 호출됨'); closeStockHomeModal();" class="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-slate-200 block" target="_blank" rel="noopener noreferrer">
+                        기본 홈 런처 설정 열기
+                    </a>
+                    <button onclick="closeStockHomeModal()" class="w-full py-2 rounded-xl bg-white/5 text-xs font-semibold text-slate-400">
+                        취소
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== MODAL 4: BEGINNER STEP-BY-STEP INSTALL GUIDE (초보자용 설치 방법 안내 모달) ==================== -->
+        <div id="install-guide-modal" class="hidden fixed lg:absolute inset-0 z-50 bg-black/85 backdrop-blur-2xl flex items-center justify-center p-4">
+            <div class="w-full max-w-[980px] max-h-[680px] rounded-3xl bg-[#0B131E] border-2 border-white/15 p-5 flex flex-col justify-between gap-4 shadow-2xl overflow-y-auto">
+                <div class="flex items-center justify-between border-b border-white/10 pb-3 shrink-0">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-white">🚗 내 차 안드로이드 올인원에 바로 설치하는 2가지 방법</h2>
+                        <p class="text-xs text-slate-400">복잡한 코딩 없이 아래 두 가지 방법 중 편한 것을 골라 그대로 따라 하시면 됩니다.</p>
+                    </div>
+                    <button onclick="closeInstallGuideModal()" class="px-4 py-2 rounded-xl accent-bg text-xs font-extrabold">닫기 ✕</button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 my-auto">
+                    <!-- Method A -->
+                    <div class="rounded-2xl bg-sky-500/10 border border-sky-400/30 p-4 flex flex-col justify-between gap-3">
+                        <div>
+                            <span class="px-2.5 py-1 rounded-full bg-sky-500 text-slate-950 text-[11px] font-black">방법 A · 가장 쉬움 (1분 컷 추천!)</span>
+                            <h3 class="text-base font-extrabold text-white mt-2">APK 변환 없이 HTML 파일 그대로 홈 런처로 쓰기</h3>
+                            <ol class="text-xs text-slate-200 space-y-2 mt-3 list-decimal list-inside leading-relaxed">
+                                <li>상단 바의 <strong class="text-sky-300">[📥 HTML 런처 다운]</strong> 버튼을 눌러 <code class="px-1.5 py-0.5 rounded bg-black/50 text-sky-300">Camaro_Launcher.html</code> 파일을 받습니다.</li>
+                                <li>받은 파일을 USB나 네이버 마이박스/구글 드라이브를 통해 <strong>차량 올인원의 <code class="text-amber-300">Download</code> 폴더</strong>에 넣습니다.</li>
+                                <li>올인원 플레이스토어에서 무료 앱 <strong>Fully Kiosk Browser</strong> (또는 <strong>WebView Kiosk</strong>)를 설치합니다.</li>
+                                <li>앱 실행 후 <strong>Start URL</strong> 칸에 아래 주소를 입력합니다:<br>
+                                    <code class="block mt-1 p-2 rounded-lg bg-black/70 text-emerald-300 font-mono text-[11px] select-all">file:///sdcard/Download/Camaro_Launcher.html</code>
+                                </li>
+                                <li>설정에서 <strong>전체화면(Fullscreen)</strong>과 <strong>기본 홈 런처로 사용(Set as Launcher)</strong>을 켜면 시동을 걸자마자 카마로 런처가 바로 실행됩니다!</li>
+                            </ol>
+                        </div>
+                        <button onclick="downloadStandaloneHtml()" class="w-full py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold text-xs shadow-lg transition">
+                            📥 지금 Camaro_Launcher.html 파일 다운로드하기
+                        </button>
+                    </div>
+
+                    <!-- Method B -->
+                    <div class="rounded-2xl bg-amber-500/10 border border-amber-400/30 p-4 flex flex-col justify-between gap-3">
+                        <div>
+                            <span class="px-2.5 py-1 rounded-full bg-amber-400 text-slate-950 text-[11px] font-black">방법 B · 진짜 .APK 설치 파일 만들기 (무료/무설치)</span>
+                            <h3 class="text-base font-extrabold text-white mt-2">PC 프로그램 설치 없이 GitHub에서 자동으로 APK 굽기</h3>
+                            <ol class="text-xs text-slate-200 space-y-2 mt-3 list-decimal list-inside leading-relaxed">
+                                <li>상단 바의 <strong class="text-amber-300">[📦 APK 제작용 ZIP 다운]</strong> 버튼을 눌러 <code class="px-1.5 py-0.5 rounded bg-black/50 text-amber-300">Camaro_Android_APK_Project.zip</code>을 다운받아 압축을 풉니다.</li>
+                                <li><a href="https://github.com" target="_blank" class="underline text-amber-300 font-bold" rel="noopener noreferrer">GitHub.com</a>에 무료 가입/로그인 후 <strong>New Repository(새 저장소)</strong>를 하나 만듭니다.</li>
+                                <li>압축을 푼 폴더 안의 파일들을 마우스로 끌어다 GitHub 화면에 전부 업로드하고 <strong>Commit changes(저장)</strong>를 누릅니다.</li>
+                                <li>GitHub 상단 메뉴의 <strong>[Actions]</strong> 탭을 누르면 자동으로 APK 생성이 시작되며, 약 2분 뒤 완료되면 하단 <strong>Artifacts</strong>에서 완성된 <strong class="text-emerald-300">Camaro-RS-Launcher-APK (app-debug.apk)</strong>를 다운받아 올인원에 바로 설치하시면 됩니다!</li>
+                            </ol>
+                        </div>
+                        <button onclick="downloadApkProjectZip()" class="w-full py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs shadow-lg transition">
+                            📦 지금 Camaro_Android_APK_Project.zip 다운로드하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subtle Toast -->
+        <div id="toast-box" class="pointer-events-none fixed top-14 left-1/2 -translate-x-1/2 z-50 px-4 py-1.5 rounded-full bg-slate-900/95 border border-white/20 text-xs font-bold text-white shadow-xl opacity-0 transition-all duration-200">
+            알림
+        </div>
+
+    </div>
+
+    <!-- ==================== APPLICATION LOGIC ==================== -->
+    <script>
+        const hvac = {
+            power: true,
+            driverTemp: 21.0,
+            passTemp: 21.5,
+            fanSpeed: 3,
+            airflow: 'bi',
+            ac: true,
+            maxAc: false,
+            recirc: true,
+            frontDefrost: false,
+            rearDefrost: false,
+            driverHeat: 2,
+            passHeat: 0
+        };
+
+        const playlist = [
+            { title: "Midnight Black Cruise", artist: "Kavinsky & Nightcall", album: "OutRun Synthwave", duration: "03:45", art: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=300&q=80" },
+            { title: "Dark Highway V6", artist: "Detroit Muscle Collective", album: "Night Drive Sessions", duration: "04:12", art: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=300&q=80" },
+            { title: "City Lights Horizon", artist: "The Midnight", album: "Endless Summer", duration: "03:28", art: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=300&q=80" }
+        ];
+
+        const installedAndroidApps = [
+            { name: "T-MAP", pkg: "com.skt.tmap.ku", color: "from-emerald-500 to-teal-700", tag: "내비게이션" },
+            { name: "카카오내비", pkg: "com.locnall.KimGiSa", color: "from-amber-400 to-orange-500", tag: "내비게이션" },
+            { name: "네이버 지도", pkg: "com.nhn.android.nmap", color: "from-green-500 to-emerald-700", tag: "내비게이션" },
+            { name: "YouTube", pkg: "com.google.android.youtube", color: "from-red-500 to-rose-700", tag: "미디어" },
+            { name: "YouTube Music", pkg: "com.google.android.apps.youtube.music", color: "from-rose-500 to-pink-700", tag: "오디오" },
+            { name: "멜론 (Melon)", pkg: "com.iloen.melon", color: "from-emerald-400 to-green-600", tag: "오디오" },
+            { name: "Netflix", pkg: "com.netflix.mediaclient", color: "from-red-600 to-slate-900", tag: "비디오" },
+            { name: "Car Scanner OBD2", pkg: "com.ovz.carscanner", color: "from-sky-500 to-blue-700", tag: "차량진단" },
+            { name: "ZLINK5 (카플레이)", pkg: "com.zjinnova.zlink", color: "from-indigo-500 to-purple-700", tag: "CarPlay" },
+            { name: "DSP 이퀄라이저", pkg: "com.android.dspmanager", color: "from-cyan-500 to-blue-800", tag: "사운드" },
+            { name: "Chrome 브라우저", pkg: "com.android.chrome", color: "from-blue-500 to-amber-500", tag: "인터넷" },
+            { name: "안드로이드 설정", pkg: "com.android.settings", color: "from-slate-500 to-slate-700", tag: "시스템" }
+        ];
+
+        let trackIdx = 0;
+        let isPlaying = true;
+        let doorLocked = true;
+
+        function switchMainView(viewName) {
+            ['home', 'carplay', 'vehicle'].forEach(v => {
+                const sec = document.getElementById(`view-${v}`);
+                const btn = document.getElementById(`dock-${v}`);
+                if (sec) sec.classList.toggle('hidden', v !== viewName);
+                if (btn) {
+                    btn.className = v === viewName
+                        ? "w-full py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all accent-bg font-bold shadow-lg"
+                        : "w-full py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-white hover:bg-white/10 transition-all";
+                }
+            });
+        }
+
+        function selectNavApp(appKey) {
+            const titles = {
+                TMAP: "T-MAP 실시간 경로 · 동대구로 방면",
+                KAKAO: "카카오내비 실시간 경로 · 동대구로 방면",
+                NAVER: "네이버지도 실시간 경로 · 동대구로 방면"
+            };
+            document.getElementById('active-nav-subtitle').textContent = titles[appKey];
+            ['TMAP', 'KAKAO', 'NAVER'].forEach(k => {
+                const chip = document.getElementById(`nav-chip-${k}`);
+                chip.className = k === appKey
+                    ? "px-2.5 py-1 rounded-lg bg-emerald-500/25 border border-emerald-400/50 text-emerald-200 text-[11px] font-bold transition"
+                    : "px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-[11px] font-bold transition";
+            });
+        }
+
+        // --- HVAC Logic (Only round button opens modal) ---
+        function openLargeHvacModal() {
+            document.getElementById('large-hvac-modal').classList.remove('hidden');
+            renderHvac();
+        }
+        function closeLargeHvacModal() {
+            document.getElementById('large-hvac-modal').classList.add('hidden');
+        }
+
+        function adjustDriverTemp(delta) {
+            hvac.power = true;
+            hvac.driverTemp = Math.min(32.0, Math.max(16.0, hvac.driverTemp + delta));
+            renderHvac();
+        }
+        function adjustPassTemp(delta) {
+            hvac.power = true;
+            hvac.passTemp = Math.min(32.0, Math.max(16.0, hvac.passTemp + delta));
+            renderHvac();
+        }
+        function syncDualTemp() {
+            hvac.passTemp = hvac.driverTemp;
+            renderHvac();
+            showToast(`운전석·조수석 온도 ${hvac.driverTemp.toFixed(1)}°C 동기화 완료`);
+        }
+        function changeFan(delta) {
+            hvac.power = true;
+            hvac.fanSpeed = Math.min(7, Math.max(1, hvac.fanSpeed + delta));
+            renderHvac();
+        }
+        function setFanDirect(level) {
+            hvac.power = true;
+            hvac.fanSpeed = level;
+            renderHvac();
+        }
+        function setAirflow(mode) {
+            hvac.power = true;
+            hvac.airflow = mode;
+            renderHvac();
+        }
+        function cycleAirflowMode() {
+            const order = ['bi', 'face', 'feet', 'screen'];
+            setAirflow(order[(order.indexOf(hvac.airflow) + 1) % order.length]);
+        }
+        function toggleHvac(key) {
+            hvac[key] = !hvac[key];
+            if (key === 'maxAc' && hvac.maxAc) {
+                hvac.power = true;
+                hvac.ac = true;
+                hvac.driverTemp = 16.0;
+                hvac.passTemp = 16.0;
+                hvac.fanSpeed = 7;
+                hvac.recirc = true;
+            }
+            renderHvac();
+        }
+        function cycleSeat(seatKey) {
+            hvac[seatKey] = (hvac[seatKey] + 1) % 4;
+            renderHvac();
+        }
+
+        function styleBarToggle(id, active, isWarm = false) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (active) {
+                el.className = isWarm
+                    ? "rounded-xl text-xs font-extrabold border bg-rose-500/25 border-rose-400 text-rose-200 flex flex-col items-center justify-center gap-0.5 py-1.5 transition"
+                    : "rounded-xl text-xs font-extrabold border bg-sky-500/25 border-sky-400 text-sky-200 flex flex-col items-center justify-center gap-0.5 py-1.5 transition";
+            } else {
+                el.className = "rounded-xl text-xs font-bold border bg-white/5 border-white/10 text-slate-400 flex flex-col items-center justify-center gap-0.5 py-1.5 transition";
+            }
+        }
+
+        function renderHvac() {
+            const dText = !hvac.power ? "OFF" : hvac.driverTemp.toFixed(1);
+            const pText = !hvac.power ? "OFF" : hvac.passTemp.toFixed(1);
+
+            document.getElementById('bar-driver-temp').textContent = dText === "OFF" ? "OFF" : `${dText}°`;
+            document.getElementById('bar-pass-temp').textContent = pText === "OFF" ? "OFF" : `${pText}°`;
+            document.getElementById('orb-temp-text').textContent = dText === "OFF" ? "OFF" : `${dText}°`;
+            document.getElementById('modal-temp-val').textContent = dText;
+
+            const fanVal = hvac.power ? hvac.fanSpeed : 0;
+            document.getElementById('bar-fan-num').textContent = fanVal;
+            document.getElementById('modal-fan-num').textContent = fanVal;
+
+            const dur = fanVal === 0 ? '999s' : `${(2.4 - fanVal * 0.28).toFixed(2)}s`;
+            document.querySelectorAll('.fan-spin').forEach(el => el.style.setProperty('--fan-duration', dur));
+
+            const barFanContainer = document.getElementById('bar-fan-bars');
+            if (barFanContainer) {
+                barFanContainer.innerHTML = '';
+                for (let i = 1; i <= 7; i++) {
+                    const b = document.createElement('button');
+                    b.style.height = `${30 + i * 10}%`;
+                    b.onclick = () => setFanDirect(i);
+                    b.className = `w-full rounded-sm transition ${i <= fanVal ? 'accent-bg shadow-[0_0_8px_var(--accent-glow)]' : 'bg-white/15 hover:bg-white/30'}`;
+                    barFanContainer.appendChild(b);
+                }
+            }
+
+            const modalBars = document.getElementById('modal-fan-bars');
+            if (modalBars) {
+                modalBars.innerHTML = '';
+                for (let i = 1; i <= 7; i++) {
+                    const b = document.createElement('button');
+                    b.onclick = () => setFanDirect(i);
+                    b.className = `h-full rounded transition ${i <= fanVal ? 'accent-bg' : 'bg-white/15'}`;
+                    modalBars.appendChild(b);
+                }
+            }
+
+            const modeLabels = {
+                screen: '바람방향: 전면 유리',
+                face: '바람방향: 상체 집중',
+                bi: '바람방향: 상체 + 하체',
+                feet: '바람방향: 하체 집중'
+            };
+            document.getElementById('bar-airflow-label').textContent = modeLabels[hvac.airflow];
+
+            ['screen', 'face', 'bi', 'feet'].forEach(m => {
+                const btn = document.getElementById(`modal-dir-${m}`);
+                if (btn) {
+                    btn.className = hvac.airflow === m
+                        ? "px-3.5 py-2 rounded-xl text-xs font-extrabold border accent-bg transition"
+                        : "px-3.5 py-2 rounded-xl text-xs font-bold border bg-white/5 border-white/10 text-slate-300 transition";
+                }
+            });
+
+            document.getElementById('modal-stream-screen').style.display = (hvac.power && (hvac.airflow === 'screen' || hvac.frontDefrost)) ? 'block' : 'none';
+            document.getElementById('modal-stream-face').style.display = (hvac.power && (hvac.airflow === 'face' || hvac.airflow === 'bi')) ? 'block' : 'none';
+            document.getElementById('modal-stream-feet').style.display = (hvac.power && (hvac.airflow === 'feet' || hvac.airflow === 'bi')) ? 'block' : 'none';
+
+            document.getElementById('bar-seat-l').textContent = hvac.driverHeat === 0 ? 'OFF' : `${hvac.driverHeat}단`;
+            document.getElementById('bar-seat-r').textContent = hvac.passHeat === 0 ? 'OFF' : `${hvac.passHeat}단`;
+            document.getElementById('modal-seat-l').textContent = hvac.driverHeat === 0 ? 'OFF' : `${hvac.driverHeat}단`;
+            document.getElementById('modal-seat-r').textContent = hvac.passHeat === 0 ? 'OFF' : `${hvac.passHeat}단`;
+
+            styleBarToggle('bar-btn-ac', hvac.ac);
+            styleBarToggle('bar-btn-recirc', hvac.recirc);
+            styleBarToggle('bar-btn-maxac', hvac.maxAc);
+            styleBarToggle('bar-btn-defrost', hvac.frontDefrost, true);
+            styleBarToggle('bar-btn-reardef', hvac.rearDefrost, true);
+        }
+
+        // --- Vehicle & Music Controls ---
+        function setGear(g) {
+            ['P', 'R', 'N', 'D', 'M'].forEach(gear => {
+                const btn = document.getElementById(`gear-${gear}`);
+                btn.className = gear === g
+                    ? "w-6 h-5 rounded text-[10px] mono-num font-extrabold accent-bg transition"
+                    : "w-6 h-5 rounded text-[10px] mono-num font-bold text-slate-400 transition";
+            });
+            document.getElementById('camaro-speed').textContent = (g === 'P' || g === 'N') ? '0' : (g === 'R' ? '6' : '72');
+        }
+
+        function toggleDoorStatus() {
+            doorLocked = !doorLocked;
+            const tile = document.getElementById('camaro-door-tile');
+            const txt = document.getElementById('camaro-door-text');
+            if (doorLocked) {
+                tile.className = "bg-emerald-500/15 hover:bg-emerald-500/25 rounded-xl py-1.5 px-2 border border-emerald-500/35 flex flex-col items-center justify-center transition";
+                txt.className = "text-xs font-extrabold text-emerald-300";
+                txt.textContent = "잠김";
+            } else {
+                tile.className = "bg-rose-500/25 hover:bg-rose-500/35 rounded-xl py-1.5 px-2 border border-rose-500/40 flex flex-col items-center justify-center transition";
+                txt.className = "text-xs font-extrabold text-rose-300";
+                txt.textContent = "열림";
+            }
+        }
+
+        function uploadCamaroPhoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = document.getElementById('camaro-custom-img');
+                img.src = e.target.result;
+                img.classList.remove('hidden');
+                document.getElementById('camaro-svg-art').classList.add('opacity-10');
+                showToast("내 차 카마로 사진이 적용되었습니다");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            document.getElementById('icon-pause').classList.toggle('hidden', !isPlaying);
+            document.getElementById('icon-play').classList.toggle('hidden', isPlaying);
+        }
+
+        function loadTrack(idx) {
+            trackIdx = idx;
+            const t = playlist[idx];
+            document.getElementById('track-title').textContent = t.title;
+            document.getElementById('track-artist').textContent = t.artist;
+            document.getElementById('track-album').textContent = t.album;
+            document.getElementById('track-total-time').textContent = t.duration;
+            document.getElementById('album-art').src = t.art;
+            isPlaying = true;
+            document.getElementById('icon-pause').classList.remove('hidden');
+            document.getElementById('icon-play').classList.add('hidden');
+        }
+        function nextTrack() { loadTrack((trackIdx + 1) % playlist.length); }
+        function prevTrack() { loadTrack((trackIdx - 1 + playlist.length) % playlist.length); }
+
+        function seekTrack(e) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const pct = Math.max(4, Math.min(98, ((e.clientX - rect.left) / rect.width) * 100));
+            document.getElementById('track-progress-bar').style.width = `${pct}%`;
+        }
+
+        // --- App Drawer & Stock Android Home Modals ---
+        function renderAndroidApps() {
+            const grid = document.getElementById('android-apps-grid');
+            grid.innerHTML = '';
+            installedAndroidApps.forEach(app => {
+                const item = document.createElement('button');
+                item.onclick = () => {
+                    showToast(`${app.name} 실행 (${app.pkg})`);
+                    closeAppDrawer();
+                };
+                item.className = "p-3.5 rounded-2xl bg-white/5 hover:bg-white/15 border border-white/10 flex flex-col items-center gap-2 transition active:scale-95";
+                item.innerHTML = `
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br ${app.color} flex items-center justify-center text-white font-black text-base shadow-lg">
+                        ${app.name.slice(0, 2)}
+                    </div>
+                    <div class="text-center">
+                        <span class="text-xs font-extrabold text-white block truncate">${app.name}</span>
+                        <span class="text-[10px] text-slate-400">${app.tag}</span>
+                    </div>
+                `;
+                grid.appendChild(item);
+            });
+        }
+
+        function openAppDrawer() {
+            renderAndroidApps();
+            document.getElementById('app-drawer-modal').classList.remove('hidden');
+        }
+        function closeAppDrawer() {
+            document.getElementById('app-drawer-modal').classList.add('hidden');
+        }
+
+        function openStockHomeModal() {
+            document.getElementById('stock-home-modal').classList.remove('hidden');
+        }
+        function closeStockHomeModal() {
+            document.getElementById('stock-home-modal').classList.add('hidden');
+        }
+
+        function openInstallGuideModal() {
+            document.getElementById('install-guide-modal').classList.remove('hidden');
+        }
+        function closeInstallGuideModal() {
+            document.getElementById('install-guide-modal').classList.add('hidden');
+        }
+
+        // --- 1-Click Direct File Download Functions (HTML & APK Project ZIP) ---
+        function getCleanCurrentHtml() {
+            return "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+        }
+
+        function triggerBlobDownload(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 300);
+        }
+
+        function downloadStandaloneHtml() {
+            try {
+                const htmlContent = getCleanCurrentHtml();
+                const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+                triggerBlobDownload(blob, 'Camaro_Launcher.html');
+                showToast('📥 Camaro_Launcher.html 다운로드가 시작되었습니다!');
+            } catch (e) {
+                showToast('다운로드 오류: ' + e.message);
+            }
+        }
+
+        async function downloadApkProjectZip() {
+            if (typeof JSZip === 'undefined') {
+                showToast('ZIP 라이브러리를 불러오는 중입니다. 2초 후 다시 눌러주세요.');
+                return;
+            }
+            const btn = document.getElementById('btn-zip-dl');
+            const origText = btn ? btn.innerHTML : '';
+            if (btn) btn.innerHTML = '<span>⏳ ZIP 생성 중...</span>';
+
+            try {
+                const zip = new JSZip();
+                const currentHtml = getCleanCurrentHtml();
+
+                const manifestXml = `<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.camaro.launcher">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+
+    <application
+        android:allowBackup="true"
+        android:label="Camaro RS Launcher"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
+        android:theme="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="sensorLandscape"
+            android:stateNotNeeded="true"
+            android:configChanges="orientation|screenSize|keyboardHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>`;
+
+                const mainActivityKt = `package com.camaro.launcher
+
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.os.Bundle
+import android.provider.Settings
+import android.view.View
+import android.view.WindowInsets
+import android.view.WindowInsetsController
+import android.webkit.JavascriptInterface
+import android.webkit.WebChromeClient
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.Toast
+
+class MainActivity : Activity() {
+    private lateinit var webView: WebView
+
+    @SuppressLint("SetJavaScriptEnabled")
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        webView = WebView(this)
+        setContentView(webView)
+        hideSystemUI()
+
+        webView.settings.apply {
+            javaScriptEnabled = true
+            domStorageEnabled = true
+            allowFileAccess = true
+            allowContentAccess = true
+            cacheMode = WebSettings.LOAD_DEFAULT
+        }
+        webView.webChromeClient = WebChromeClient()
+        webView.webViewClient = WebViewClient()
+        webView.addJavascriptInterface(AndroidBridge(this), "AndroidBridge")
+        webView.loadUrl("file:///android_asset/index.html")
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) hideSystemUI()
+    }
+
+    private fun hideSystemUI() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.insetsController?.let {
+                it.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+                it.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                or View.SYSTEM_UI_FLAG_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            )
+        }
+    }
+
+    inner class AndroidBridge(private val context: Context) {
+        @JavascriptInterface
+        fun launchApp(packageName: String) {
+            val intent = context.packageManager.getLaunchIntentForPackage(packageName)
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            } else {
+                Toast.makeText(context, "미설치 앱: $packageName", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        @JavascriptInterface
+        fun returnToStockHome() {
+            val intent = Intent(Settings.ACTION_HOME_SETTINGS).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+        }
+    }
+}`;
+
+                const settingsGradle = `pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = "CamaroLauncher"
+include(":app")`;
+
+                const rootBuildGradle = `plugins {
+    id("com.android.application") version "8.2.2" apply false
+    id("org.jetbrains.kotlin.android") version "1.9.22" apply false
+}`;
+
+                const appBuildGradle = `plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+}
+
+android {
+    namespace = "com.camaro.launcher"
+    compileSdk = 34
+
+    defaultConfig {
+        applicationId = "com.camaro.launcher"
+        minSdk = 26
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}`;
+
+                const workflowYml = `name: Build Camaro Launcher APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.5'
+      - name: Build Debug APK
+        run: gradle assembleDebug
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Camaro-RS-Launcher-APK
+          path: app/build/outputs/apk/debug/app-debug.apk`;
+
+                zip.file("settings.gradle.kts", settingsGradle);
+                zip.file("build.gradle.kts", rootBuildGradle);
+                zip.file("app/build.gradle.kts", appBuildGradle);
+                zip.file("app/src/main/AndroidManifest.xml", manifestXml);
+                zip.file("app/src/main/java/com/camaro/launcher/MainActivity.kt", mainActivityKt);
+                zip.file("app/src/main/assets/index.html", currentHtml);
+                zip.file(".github/workflows/build-apk.yml", workflowYml);
+
+                const content = await zip.generateAsync({ type: "blob" });
+                triggerBlobDownload(content, "Camaro_Android_APK_Project.zip");
+                showToast("📦 Camaro_Android_APK_Project.zip 다운로드가 완료되었습니다!");
+            } catch (err) {
+                showToast("ZIP 생성 오류: " + err.message);
+            } finally {
+                if (btn) btn.innerHTML = origText;
+            }
+        }
+
+        function setAccent(hex, glow) {
+            document.documentElement.style.setProperty('--accent', hex);
+            document.documentElement.style.setProperty('--accent-glow', glow);
+            renderHvac();
+        }
+
+        function showToast(msg) {
+            const box = document.getElementById('toast-box');
+            box.textContent = msg;
+            box.classList.remove('opacity-0');
+            box.classList.add('opacity-100');
+            setTimeout(() => {
+                box.classList.remove('opacity-100');
+                box.classList.add('opacity-0');
+            }, 1800);
+        }
+
+        function updateClock() {
+            const now = new Date();
+            let h = now.getHours();
+            const m = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('top-ampm').textContent = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            const timeStr = `${String(h).padStart(2, '0')}:${m}`;
+            document.getElementById('top-clock').textContent = timeStr;
+            document.getElementById('carplay-clock').textContent = timeStr;
+        }
+
+        window.onload = () => {
+            renderHvac();
+            updateClock();
+            setInterval(updateClock, 15000);
+        };
+    </script>
+
+</body></html>
