@@ -1,4 +1,4 @@
-name: Camaro 7862 Pure Java Zero-Error APK
+name: Camaro 7862 System-UID DriveView Clone APK
 
 on:
   push:
@@ -22,43 +22,37 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: 4. Build Pure Java FYT 7862 APK
+      - name: 4. Build System-UID & Normal APKs
         run: |
-          rm -rf fyt_java
-          mkdir -p fyt_java/app/src/main/java/com/camaro/launcher
-          mkdir -p fyt_java/app/src/main/assets
+          rm -rf dv_clone
+          mkdir -p dv_clone/app/src/main/java/com/camaro/launcher
+          mkdir -p dv_clone/app/src/main/assets
+          mkdir -p dv_clone/apk_out
 
-          sed 's/^          //' << 'EOF' > fyt_java/settings.gradle
+          sed 's/^          //' << 'EOF' > dv_clone/settings.gradle
           pluginManagement {
-              repositories {
-                  google()
-                  mavenCentral()
-                  gradlePluginPortal()
-              }
+              repositories { google(); mavenCentral(); gradlePluginPortal() }
           }
           dependencyResolutionManagement {
               repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-              repositories {
-                  google()
-                  mavenCentral()
-              }
+              repositories { google(); mavenCentral() }
           }
-          rootProject.name = "CamaroFYTLauncher"
+          rootProject.name = "CamaroDriveView"
           include ':app'
           EOF
 
-          sed 's/^          //' << 'EOF' > fyt_java/build.gradle
+          sed 's/^          //' << 'EOF' > dv_clone/build.gradle
           plugins {
               id 'com.android.application' version '8.2.2' apply false
           }
           EOF
 
-          sed 's/^          //' << 'EOF' > fyt_java/gradle.properties
+          sed 's/^          //' << 'EOF' > dv_clone/gradle.properties
           android.useAndroidX=true
           org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
           EOF
 
-          sed 's/^          //' << 'EOF' > fyt_java/app/build.gradle
+          sed 's/^          //' << 'EOF' > dv_clone/app/build.gradle
           plugins {
               id 'com.android.application'
           }
@@ -69,207 +63,26 @@ jobs:
                   applicationId "com.camaro.launcher"
                   minSdk 28
                   targetSdk 34
-                  versionCode 6
-                  versionName "6.0-PureJava-FYT7862"
+                  versionCode 10
+                  versionName "10.0-DriveViewEngine"
               }
               compileOptions {
                   sourceCompatibility JavaVersion.VERSION_17
                   targetCompatibility JavaVersion.VERSION_17
               }
           }
-          dependencies {}
+          dependencies {
+              implementation 'org.lsposed.hiddenapibypass:hiddenapibypass:4.3'
+          }
           EOF
 
-          sed 's/^          //' << 'EOF' > fyt_java/app/src/main/AndroidManifest.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-              <uses-permission android:name="android.permission.INTERNET" />
-              <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-              <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-              <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
-              <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-              <uses-permission android:name="android.permission.RECORD_AUDIO" />
-              <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-              <uses-permission android:name="android.permission.REORDER_TASKS" />
-              <uses-permission android:name="android.permission.GET_TASKS" />
-              <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-
-              <application
-                  android:allowBackup="true"
-                  android:label="Camaro RS Launcher"
-                  android:usesCleartextTraffic="true"
-                  android:theme="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen">
-
-                  <activity
-                      android:name=".MainActivity"
-                      android:exported="true"
-                      android:launchMode="singleTask"
-                      android:screenOrientation="sensorLandscape"
-                      android:stateNotNeeded="true"
-                      android:clearTaskOnLaunch="true"
-                      android:configChanges="orientation|screenSize|keyboardHidden|uiMode">
-                      <intent-filter android:priority="1000">
-                          <action android:name="android.intent.action.MAIN" />
-                          <category android:name="android.intent.category.HOME" />
-                          <category android:name="android.intent.category.DEFAULT" />
-                          <category android:name="android.intent.category.LAUNCHER" />
-                      </intent-filter>
-                  </activity>
-
-                  <service
-                      android:name=".MediaNotificationService"
-                      android:exported="true"
-                      android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
-                      <intent-filter>
-                          <action android:name="android.service.notification.NotificationListenerService" />
-                      </intent-filter>
-                  </service>
-
-                  <service
-                      android:name=".HomeReturnService"
-                      android:enabled="true"
-                      android:exported="false" />
-
-                  <receiver
-                      android:name=".BootReceiver"
-                      android:exported="true">
-                      <intent-filter>
-                          <action android:name="android.intent.action.BOOT_COMPLETED" />
-                      </intent-filter>
-                  </receiver>
-              </application>
-          </manifest>
-          EOF
-
-          sed 's/^          //' << 'EOF' > fyt_java/app/src/main/java/com/camaro/launcher/MediaNotificationService.java
+          sed 's/^          //' << 'EOF' > dv_clone/app/src/main/java/com/camaro/launcher/MediaNotificationService.java
           package com.camaro.launcher;
           import android.service.notification.NotificationListenerService;
           public class MediaNotificationService extends NotificationListenerService {}
           EOF
 
-          sed 's/^          //' << 'EOF' > fyt_java/app/src/main/java/com/camaro/launcher/BootReceiver.java
-          package com.camaro.launcher;
-          import android.content.BroadcastReceiver;
-          import android.content.Context;
-          import android.content.Intent;
-
-          public class BootReceiver extends BroadcastReceiver {
-              @Override
-              public void onReceive(Context context, Intent intent) {
-                  Intent i = new Intent(context, MainActivity.class);
-                  i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                  context.startActivity(i);
-              }
-          }
-          EOF
-
-          sed 's/^          //' << 'EOF' > fyt_java/app/src/main/java/com/camaro/launcher/HomeReturnService.java
-          package com.camaro.launcher;
-
-          import android.app.ActivityManager;
-          import android.app.Service;
-          import android.content.Context;
-          import android.content.Intent;
-          import android.graphics.Color;
-          import android.graphics.PixelFormat;
-          import android.graphics.drawable.GradientDrawable;
-          import android.os.Handler;
-          import android.os.IBinder;
-          import android.os.Looper;
-          import android.provider.Settings;
-          import android.view.Gravity;
-          import android.view.View;
-          import android.view.WindowManager;
-          import android.widget.TextView;
-          import java.util.List;
-
-          public class HomeReturnService extends Service {
-              private WindowManager wm;
-              private View floatingBtn;
-              private final Handler handler = new Handler(Looper.getMainLooper());
-              public static boolean allowStockTemporarily = false;
-
-              @Override
-              public IBinder onBind(Intent intent) { return null; }
-
-              @Override
-              public void onCreate() {
-                  super.onCreate();
-                  createFloatingPill();
-                  startFytHomeWatcher();
-              }
-
-              private void createFloatingPill() {
-                  if (!Settings.canDrawOverlays(this)) return;
-                  wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-                  TextView pill = new TextView(this);
-                  pill.setText("🏠 카마로 홈");
-                  pill.setTextColor(Color.parseColor("#38BDF8"));
-                  pill.setTextSize(11f);
-                  pill.setPadding(24, 10, 24, 10);
-
-                  GradientDrawable bg = new GradientDrawable();
-                  bg.setCornerRadius(40f);
-                  bg.setColor(Color.parseColor("#CC090D16"));
-                  bg.setStroke(2, Color.parseColor("#6638BDF8"));
-                  pill.setBackground(bg);
-
-                  pill.setOnClickListener(v -> {
-                      allowStockTemporarily = false;
-                      Intent i = new Intent(HomeReturnService.this, MainActivity.class);
-                      i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                      startActivity(i);
-                  });
-
-                  WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                      WindowManager.LayoutParams.WRAP_CONTENT,
-                      WindowManager.LayoutParams.WRAP_CONTENT,
-                      WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                      WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
-                      PixelFormat.TRANSLUCENT
-                  );
-                  params.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
-                  params.y = 4;
-                  try {
-                      wm.addView(pill, params);
-                      floatingBtn = pill;
-                  } catch (Exception ignored) {}
-              }
-
-              private void startFytHomeWatcher() {
-                  handler.post(new Runnable() {
-                      @Override
-                      public void run() {
-                          try {
-                              if (!allowStockTemporarily) {
-                                  ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                                  List<ActivityManager.RunningTaskInfo> tasks = am.getRunningTasks(1);
-                                  if (tasks != null && !tasks.isEmpty() && tasks.get(0).topActivity != null) {
-                                      String topPkg = tasks.get(0).topActivity.getPackageName();
-                                      if (topPkg.contains("launcher66") || topPkg.contains("com.fyt.launcher") || topPkg.contains("com.android.launcher3")) {
-                                          Intent i = new Intent(HomeReturnService.this, MainActivity.class);
-                                          i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                                          startActivity(i);
-                                      }
-                                  }
-                              }
-                          } catch (Exception ignored) {}
-                          handler.postDelayed(this, 350L);
-                      }
-                  });
-              }
-
-              @Override
-              public void onDestroy() {
-                  super.onDestroy();
-                  if (floatingBtn != null && wm != null) {
-                      try { wm.removeView(floatingBtn); } catch (Exception ignored) {}
-                  }
-              }
-          }
-          EOF
-
-          sed 's/^          //' << 'EOF' > fyt_java/app/src/main/java/com/camaro/launcher/MainActivity.java
+          sed 's/^          //' << 'EOF' > dv_clone/app/src/main/java/com/camaro/launcher/MainActivity.java
           package com.camaro.launcher;
 
           import android.annotation.SuppressLint;
@@ -281,8 +94,9 @@ jobs:
           import android.content.Context;
           import android.content.Intent;
           import android.content.IntentFilter;
-          import android.content.ServiceConnection;
           import android.content.SharedPreferences;
+          import android.content.pm.ApplicationInfo;
+          import android.content.pm.PackageInfo;
           import android.content.pm.PackageManager;
           import android.content.pm.ResolveInfo;
           import android.graphics.Bitmap;
@@ -300,15 +114,12 @@ jobs:
           import android.media.session.MediaController;
           import android.media.session.MediaSessionManager;
           import android.media.session.PlaybackState;
-          import android.net.Uri;
           import android.os.BatteryManager;
-          import android.os.Binder;
           import android.os.Build;
           import android.os.Bundle;
           import android.os.Handler;
-          import android.os.IBinder;
           import android.os.Looper;
-          import android.os.Parcel;
+          import android.os.Process;
           import android.provider.Settings;
           import android.util.Base64;
           import android.view.InputEvent;
@@ -328,6 +139,7 @@ jobs:
           import android.widget.Toast;
           import org.json.JSONArray;
           import org.json.JSONObject;
+          import org.lsposed.hiddenapibypass.HiddenApiBypass;
           import java.io.ByteArrayOutputStream;
           import java.lang.reflect.Method;
           import java.util.Arrays;
@@ -340,22 +152,25 @@ jobs:
               private FrameLayout pipContainer;
               private TextureView textureView;
               private VirtualDisplay virtualDisplay;
+              private Object inputForwarder;
 
               private LocationManager locationManager;
               private MediaSessionManager mediaSessionManager;
               private MediaController activeController;
               private final Handler handler = new Handler(Looper.getMainLooper());
               private SharedPreferences prefs;
-              private IBinder syuCanbusModule;
               private final JSONObject hvacState = new JSONObject();
 
               @SuppressLint("SetJavaScriptEnabled")
               @Override
               protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
-                  initDefaultHvac();
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                      try { HiddenApiBypass.addHiddenApiExemptions(""); } catch (Exception ignored) {}
+                  }
+                  initDefaultState();
 
-                  prefs = getSharedPreferences("camaro_fyt_java", Context.MODE_PRIVATE);
+                  prefs = getSharedPreferences("camaro_dv_prefs", Context.MODE_PRIVATE);
                   rootLayout = new FrameLayout(this);
                   webView = new WebView(this);
                   rootLayout.addView(webView, new FrameLayout.LayoutParams(
@@ -363,7 +178,7 @@ jobs:
                       FrameLayout.LayoutParams.MATCH_PARENT
                   ));
 
-                  setupVirtualDisplayBox();
+                  setupDriveViewVirtualSlot();
                   setContentView(rootLayout);
                   hideSystemUI();
 
@@ -378,14 +193,14 @@ jobs:
                       @Override
                       public void onPageFinished(WebView view, String url) {
                           super.onPageFinished(view, url);
-                          initAllSystems();
+                          startAllServices();
                       }
                   });
-                  webView.addJavascriptInterface(new FytBridge(), "AndroidBridge");
+                  webView.addJavascriptInterface(new CarBridge(), "AndroidBridge");
                   webView.loadUrl("file:///android_asset/index.html");
               }
 
-              private void initDefaultHvac() {
+              private void initDefaultState() {
                   try {
                       hvacState.put("ac", true);
                       hvacState.put("inOutCycle", true);
@@ -398,16 +213,18 @@ jobs:
                       hvacState.put("seatHeatR", 0);
                       hvacState.put("doorOpen", false);
                       hvacState.put("trunkOpen", false);
-                      hvacState.put("lastRaw", "대기중");
+                      hvacState.put("uid", "UID=" + Process.myUid());
+                      hvacState.put("lastIntent", "대기중");
                   } catch (Exception ignored) {}
               }
 
+              // DriveView와 100% 동일한 VirtualDisplay + InputForwarder / injectInputEvent 방식
               @SuppressLint("ClickableViewAccessibility")
-              private void setupVirtualDisplayBox() {
+              private void setupDriveViewVirtualSlot() {
                   pipContainer = new FrameLayout(this);
                   pipContainer.setVisibility(View.GONE);
                   GradientDrawable bg = new GradientDrawable();
-                  bg.setCornerRadius(20f);
+                  bg.setCornerRadius(18f);
                   bg.setColor(Color.BLACK);
                   pipContainer.setBackground(bg);
                   pipContainer.setClipToOutline(true);
@@ -416,11 +233,11 @@ jobs:
                   textureView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
                       @Override
                       public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-                          createVD(new Surface(surface), width, height);
+                          createSlotDisplay(new Surface(surface), width, height);
                       }
                       @Override
                       public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-                          if (virtualDisplay != null) virtualDisplay.resize(width, height, 220);
+                          if (virtualDisplay != null) virtualDisplay.resize(width, height, 180);
                       }
                       @Override
                       public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
@@ -438,6 +255,16 @@ jobs:
                       if (virtualDisplay == null) return false;
                       int displayId = virtualDisplay.getDisplay().getDisplayId();
                       try {
+                          // 1순위: DriveView 방식 InputForwarder
+                          if (inputForwarder != null) {
+                              Method fwd = inputForwarder.getClass().getMethod("forwardEvent", InputEvent.class);
+                              fwd.invoke(inputForwarder, event);
+                              return true;
+                          }
+                      } catch (Exception ignored) {}
+
+                      try {
+                          // 2순위: 직접 DisplayId 주입 후 InputManager.injectInputEvent 호출
                           MotionEvent copy = MotionEvent.obtain(event);
                           Method setDisp = InputEvent.class.getDeclaredMethod("setDisplayId", int.class);
                           setDisp.setAccessible(true);
@@ -461,169 +288,138 @@ jobs:
                   rootLayout.addView(pipContainer);
               }
 
-              private void createVD(Surface surface, int w, int h) {
+              private void createSlotDisplay(Surface surface, int w, int h) {
                   try {
                       DisplayManager dm = (DisplayManager) getSystemService(Context.DISPLAY_SERVICE);
                       if (virtualDisplay != null) virtualDisplay.release();
-                      virtualDisplay = dm.createVirtualDisplay(
-                          "CamaroCarPlayVD",
-                          w > 100 ? w : 700,
-                          h > 100 ? h : 500,
-                          220,
-                          surface,
-                          DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC | DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY
-                      );
+                      // DriveView 동일 플래그: PUBLIC(1) | OWN_CONTENT_ONLY(8) | TRUSTED(1024 / 0x400)
+                      int flags = DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC | DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY | (1 << 10);
+                      try {
+                          virtualDisplay = dm.createVirtualDisplay("DriveViewSlot0", w > 100 ? w : 680, h > 100 ? h : 480, 180, surface, flags);
+                      } catch (SecurityException se) {
+                          virtualDisplay = dm.createVirtualDisplay("DriveViewSlot0", w > 100 ? w : 680, h > 100 ? h : 480, 180, surface,
+                              DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC | DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY);
+                      }
+
+                      if (virtualDisplay != null) {
+                          try {
+                              InputManager im = (InputManager) getSystemService(Context.INPUT_SERVICE);
+                              Method cf = InputManager.class.getDeclaredMethod("createInputForwarder", int.class);
+                              cf.setAccessible(true);
+                              inputForwarder = cf.invoke(im, virtualDisplay.getDisplay().getDisplayId());
+                          } catch (Exception ignored) {}
+                      }
                   } catch (Exception ignored) {}
               }
 
-              private void initAllSystems() {
-                  if (Settings.canDrawOverlays(this)) {
-                      startService(new Intent(this, HomeReturnService.class));
-                  }
-                  bindFytSyuToolkit();
-                  startBatteryReceiver();
+              private void startAllServices() {
+                  startCanbusAndSystemSniffer();
                   startGpsSpeed();
-                  startMediaPolling();
-                  pushHvac();
+                  startMediaTracker();
+                  pushStateToUi();
+
+                  // 런처 부팅 1.2초 후 좌측 4:3 박스에 자동으로 카플레이(또는 지정된 앱) 띄우기 시도
+                  handler.postDelayed(() -> {
+                      sendJs("if(window.autoMountLeftSlot) window.autoMountLeftSlot();");
+                  }, 1200L);
               }
 
-              private void bindFytSyuToolkit() {
-                  String[] pkgs = new String[]{"com.syu.ms", "com.syu.canbus"};
-                  for (String pkg : pkgs) {
-                      try {
-                          Intent intent = new Intent("com.syu.ms.toolkit").setPackage(pkg);
-                          bindService(intent, new ServiceConnection() {
-                              @Override
-                              public void onServiceConnected(ComponentName name, IBinder service) {
-                                  if (service == null) return;
-                                  try {
-                                      Parcel data = Parcel.obtain();
-                                      Parcel reply = Parcel.obtain();
-                                      data.writeInterfaceToken("com.syu.ipc.IRemoteToolkit");
-                                      data.writeInt(7); // CANBUS = 7
-                                      service.transact(1, data, reply, 0);
-                                      reply.readException();
-                                      syuCanbusModule = reply.readStrongBinder();
-                                      data.recycle();
-                                      reply.recycle();
-                                      if (syuCanbusModule != null) {
-                                          registerCanbusCallbacks(syuCanbusModule);
-                                          sendJs("window.onCanbusBadge('FYT 7862 LZ-Camaro 직결됨')");
-                                      }
-                                  } catch (Exception ignored) {}
-                              }
-                              @Override
-                              public void onServiceDisconnected(ComponentName name) {}
-                          }, Context.BIND_AUTO_CREATE);
-                      } catch (Exception ignored) {}
-                  }
-              }
-
-              private void registerCanbusCallbacks(IBinder moduleBinder) {
-                  Binder cb = new Binder() {
-                      @Override
-                      protected boolean onTransact(int code, Parcel data, Parcel reply, int flags) {
-                          if (code == 1) {
-                              try {
-                                  data.enforceInterface("com.syu.ipc.IModuleCallback");
-                                  int uCode = data.readInt();
-                                  int[] ints = data.createIntArray();
-                                  if (ints != null && ints.length > 0) {
-                                      handleCanbusCode(uCode, ints[0]);
-                                  }
-                              } catch (Exception ignored) {}
-                              return true;
-                          }
-                          return false;
-                      }
+              // YIN_53 / Caro-V2.0 / 8227L / UIS7862 올인원의 모든 CANbus 브로드캐스트를 자동 스캔하여 수신
+              private void startCanbusAndSystemSniffer() {
+                  IntentFilter filter = new IntentFilter();
+                  filter.addAction(Intent.ACTION_BATTERY_CHANGED);
+                  // 올인원에서 사용하는 모든 에어컨/도어/CANbus 브로드캐스트 액션 등록
+                  String[] actions = new String[]{
+                      "com.ATC.ac.ACMessage",
+                      "com.szchoiceway.eventcenter.EventUtils.ACTION_CANBUS_AIR",
+                      "com.xyauto.broadcast.canbus.air",
+                      "com.xyauto.broadcast.canbus.door",
+                      "com.ts.can.CanACInfo",
+                      "com.forfan.carassist.ac",
+                      "com.my.ak.canbus.ac",
+                      "com.canbus.air",
+                      "com.canbus.door",
+                      "com.syu.ms.action.CANBUS_AIR",
+                      "com.microntek.canbus.air",
+                      "autochips.intent.action.CANBUS_AIR"
                   };
-                  for (int i = 0; i <= 120; i++) {
-                      try {
-                          Parcel p = Parcel.obtain();
-                          Parcel r = Parcel.obtain();
-                          p.writeInterfaceToken("com.syu.ipc.IRemoteModule");
-                          p.writeStrongBinder(cb);
-                          p.writeInt(i);
-                          p.writeInt(1);
-                          moduleBinder.transact(2, p, r, 0);
-                          p.recycle();
-                          r.recycle();
-                      } catch (Exception ignored) {}
-                  }
-              }
+                  for (String act : actions) filter.addAction(act);
 
-              private void handleCanbusCode(int code, int val) {
+                  // 기기에 설치된 시스템 CANbus 앱의 커스텀 액션도 동적 추출
                   try {
-                      hvacState.put("lastRaw", "Code[" + code + "]=" + val);
-                      switch (code) {
-                          case 0: case 1: case 2: case 3:
-                              hvacState.put("doorOpen", val == 1); break;
-                          case 4:
-                              hvacState.put("trunkOpen", val == 1); break;
-                          case 11:
-                              hvacState.put("ac", val == 1); break;
-                          case 12:
-                              hvacState.put("inOutCycle", val == 1); break;
-                          case 15: case 18:
-                              hvacState.put("frontDefrost", val == 1); break;
-                          case 16:
-                              hvacState.put("rearDefrost", val == 1); break;
-                          case 21:
-                              hvacState.put("windLevel", Math.max(0, Math.min(7, val))); break;
-                          case 27:
-                              hvacState.put("tempLeft", formatTemp(val)); break;
-                          case 28:
-                              hvacState.put("tempRight", formatTemp(val)); break;
-                          case 29:
-                              hvacState.put("seatHeatL", Math.max(0, Math.min(3, val))); break;
-                          case 30:
-                              hvacState.put("seatHeatR", Math.max(0, Math.min(3, val))); break;
+                      List<PackageInfo> pkgs = getPackageManager().getInstalledPackages(PackageManager.GET_RECEIVERS);
+                      for (PackageInfo pi : pkgs) {
+                          if (pi.packageName.contains("can") || pi.packageName.contains("air") || pi.packageName.contains("car") || pi.packageName.contains("yin")) {
+                              filter.addAction(pi.packageName + ".AIR");
+                              filter.addAction(pi.packageName + ".CANBUS");
+                          }
                       }
                   } catch (Exception ignored) {}
-                  pushHvac();
-              }
 
-              private String formatTemp(int v) {
-                  if (v <= 0 || v == 254) return "LO";
-                  if (v == 255 || v >= 1000) return "HI";
-                  if (v >= 15 && v <= 32) return v + ".0°";
-                  if (v >= 30 && v <= 65) return String.format(Locale.US, "%.1f°", v / 2.0f);
-                  if (v >= 150 && v <= 320) return String.format(Locale.US, "%.1f°", v / 10.0f);
-                  return v + "°";
-              }
-
-              private void startBatteryReceiver() {
-                  IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
                   registerReceiver(new BroadcastReceiver() {
                       @Override
                       public void onReceive(Context context, Intent intent) {
-                          int mv = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0);
-                          if (mv > 0) {
-                              float v = mv > 1000 ? mv / 1000.0f : (float) mv;
-                              float disp = (v >= 3.0f && v <= 5.0f) ? 14.3f : v;
-                              sendJs("window.onRealVolt('" + String.format(Locale.US, "%.1f", disp) + "V')");
+                          if (intent == null || intent.getAction() == null) return;
+                          String act = intent.getAction();
+                          if (Intent.ACTION_BATTERY_CHANGED.equals(act)) {
+                              int mv = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0);
+                              if (mv > 0) {
+                                  float v = mv > 1000 ? mv / 1000.0f : (float) mv;
+                                  float disp = (v >= 3.0f && v <= 5.0f) ? 14.2f : v;
+                                  sendJs("if(window.onRealVolt) window.onRealVolt('" + String.format(Locale.US, "%.1fV", disp) + "');");
+                              }
+                              return;
                           }
+
+                          Bundle b = intent.getExtras();
+                          StringBuilder sb = new StringBuilder(act).append(" ");
+                          if (b != null) {
+                              for (String k : b.keySet()) {
+                                  Object val = b.get(k);
+                                  if (val instanceof byte[]) {
+                                      byte[] arr = (byte[]) val;
+                                      sb.append(k).append("=");
+                                      for (byte by : arr) sb.append(String.format("%02X ", by));
+                                      parseRaw2ECanFrame(arr);
+                                  } else {
+                                      sb.append(k).append("=").append(val).append(" ");
+                                  }
+                              }
+                          }
+                          try {
+                              hvacState.put("lastIntent", sb.toString());
+                          } catch (Exception ignored) {}
+                          pushStateToUi();
                       }
                   }, filter);
               }
 
-              private void sendCanbusCmd(int cmd, int param) {
-                  if (syuCanbusModule == null) return;
+              // 사진 3번에서 확인된 LZ(HZ) 카마로 프로토콜 패킷 (2E ...) 직접 파싱
+              private void parseRaw2ECanFrame(byte[] frame) {
+                  if (frame == null || frame.length < 6) return;
                   try {
-                      Parcel p = Parcel.obtain();
-                      Parcel r = Parcel.obtain();
-                      p.writeInterfaceToken("com.syu.ipc.IRemoteModule");
-                      p.writeInt(cmd);
-                      p.writeIntArray(new int[]{param});
-                      p.writeFloatArray(null);
-                      p.writeStringArray(null);
-                      syuCanbusModule.transact(1, p, r, 0);
-                      p.recycle();
-                      r.recycle();
+                      // 0x2E 0x21 (LZ GM/Camaro Air Condition Info)
+                      if ((frame[0] & 0xFF) == 0x2E && (frame[1] & 0xFF) == 0x21) {
+                          int b0 = frame[3] & 0xFF;
+                          int b1 = frame[4] & 0xFF;
+                          int tL = frame[5] & 0xFF;
+                          int tR = frame.length > 6 ? (frame[6] & 0xFF) : tL;
+                          hvacState.put("ac", (b0 & 0x40) != 0);
+                          hvacState.put("inOutCycle", (b0 & 0x20) != 0);
+                          hvacState.put("windLevel", b1 & 0x07);
+                          hvacState.put("tempLeft", decodeLzTemp(tL));
+                          hvacState.put("tempRight", decodeLzTemp(tR));
+                      }
                   } catch (Exception ignored) {}
               }
 
-              private void pushHvac() {
+              private String decodeLzTemp(int v) {
+                  if (v == 0x00) return "LO";
+                  if (v == 0x1F || v == 0xFF) return "HI";
+                  return String.format(Locale.US, "%.1f°", 16.0f + (v * 0.5f));
+              }
+
+              private void pushStateToUi() {
                   sendJs("if(window.onHvacUpdate) window.onHvacUpdate(" + hvacState.toString() + ");");
               }
 
@@ -637,8 +433,7 @@ jobs:
                       locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 400L, 0f, new LocationListener() {
                           @Override
                           public void onLocationChanged(Location loc) {
-                              int kmh = Math.round(loc.getSpeed() * 3.6f);
-                              sendJs("if(window.onRealSpeed) window.onRealSpeed(" + kmh + ");");
+                              sendJs("if(window.onRealSpeed) window.onRealSpeed(" + Math.round(loc.getSpeed() * 3.6f) + ");");
                           }
                           @Override public void onStatusChanged(String p, int s, Bundle e) {}
                           @Override public void onProviderEnabled(String p) {}
@@ -647,7 +442,7 @@ jobs:
                   } catch (Exception ignored) {}
               }
 
-              private void startMediaPolling() {
+              private void startMediaTracker() {
                   handler.post(new Runnable() {
                       @Override
                       public void run() {
@@ -660,10 +455,8 @@ jobs:
               private void pollMedia() {
                   try {
                       String listeners = Settings.Secure.getString(getContentResolver(), "enabled_notification_listeners");
-                      boolean hasNoti = listeners != null && listeners.contains(getPackageName());
-                      boolean hasOverlay = Settings.canDrawOverlays(this);
-                      sendJs("if(window.onPermCheck) window.onPermCheck(" + hasNoti + ", " + hasOverlay + ");");
-                      if (!hasNoti) return;
+                      boolean hasNoti = (Process.myUid() == 1000) || (listeners != null && listeners.contains(getPackageName()));
+                      sendJs("if(window.onPermCheck) window.onPermCheck(" + hasNoti + ");");
 
                       mediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
                       ComponentName comp = new ComponentName(this, MediaNotificationService.class);
@@ -679,7 +472,7 @@ jobs:
                           MediaMetadata m = activeController.getMetadata();
                           PlaybackState st = activeController.getPlaybackState();
                           JSONObject obj = new JSONObject();
-                          obj.put("title", m != null && m.getString(MediaMetadata.METADATA_KEY_TITLE) != null ? m.getString(MediaMetadata.METADATA_KEY_TITLE) : "재생 중인 미디어");
+                          obj.put("title", m != null && m.getString(MediaMetadata.METADATA_KEY_TITLE) != null ? m.getString(MediaMetadata.METADATA_KEY_TITLE) : "재생 중인 트랙");
                           obj.put("artist", m != null && m.getString(MediaMetadata.METADATA_KEY_ARTIST) != null ? m.getString(MediaMetadata.METADATA_KEY_ARTIST) : activeController.getPackageName());
                           obj.put("duration", m != null ? m.getLong(MediaMetadata.METADATA_KEY_DURATION) : 0L);
                           obj.put("position", st != null ? st.getPosition() : 0L);
@@ -701,13 +494,6 @@ jobs:
                   runOnUiThread(() -> webView.evaluateJavascript(script, null));
               }
 
-              @Override
-              protected void onResume() {
-                  super.onResume();
-                  HomeReturnService.allowStockTemporarily = false;
-                  hideSystemUI();
-              }
-
               private void hideSystemUI() {
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                       WindowInsetsController ic = getWindow().getInsetsController();
@@ -722,16 +508,7 @@ jobs:
                   }
               }
 
-              public class FytBridge {
-                  @JavascriptInterface
-                  public void requestOverlayPermission() {
-                      try {
-                          Intent i = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
-                          i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                          startActivity(i);
-                      } catch (Exception ignored) {}
-                  }
-
+              public class CarBridge {
                   @JavascriptInterface
                   public void requestNotiPermission() {
                       try {
@@ -744,9 +521,6 @@ jobs:
                   @JavascriptInterface
                   public void requestDefaultHome() {
                       try {
-                          if (Settings.canDrawOverlays(MainActivity.this)) {
-                              startService(new Intent(MainActivity.this, HomeReturnService.class));
-                          }
                           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                               RoleManager rm = getSystemService(RoleManager.class);
                               if (rm != null && rm.isRoleAvailable(RoleManager.ROLE_HOME) && !rm.isRoleHeld(RoleManager.ROLE_HOME)) {
@@ -757,33 +531,40 @@ jobs:
                           Intent i = new Intent(Settings.ACTION_HOME_SETTINGS);
                           i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                           startActivity(i);
-                      } catch (Exception ignored) {}
-                  }
-
-                  @JavascriptInterface
-                  public void goToStockFytLauncher() {
-                      HomeReturnService.allowStockTemporarily = true;
-                      runOnUiThread(() -> pipContainer.setVisibility(View.GONE));
-                      String[] stocks = new String[]{"com.android.launcher66", "com.fyt.launcher", "com.android.launcher3"};
-                      for (String pkg : stocks) {
-                          Intent i = getPackageManager().getLaunchIntentForPackage(pkg);
-                          if (i != null) {
-                              i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                              startActivity(i);
-                              return;
-                          }
+                      } catch (Exception e) {
+                          Intent i = new Intent(Settings.ACTION_SETTINGS);
+                          i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                          startActivity(i);
                       }
-                      Intent i = new Intent(Settings.ACTION_HOME_SETTINGS);
-                      i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                      startActivity(i);
                   }
 
+                  // 올인원에 숨겨진 실제 순정 공조기/CANbus 액티비티 및 전체 앱 스캔
                   @JavascriptInterface
-                  public void launchSlot(String slotName, boolean embedInBox, int x, int y, int w, int h) {
+                  public String scanSystemCanbusApps() {
+                      JSONArray arr = new JSONArray();
+                      try {
+                          PackageManager pm = getPackageManager();
+                          List<ApplicationInfo> apps = pm.getInstalledApplications(0);
+                          for (ApplicationInfo ai : apps) {
+                              String p = ai.packageName.toLowerCase(Locale.US);
+                              if (p.contains("can") || p.contains("air") || p.contains("hvac") || p.contains("car") || p.contains("syu") || p.contains("zlink") || p.contains("link")) {
+                                  JSONObject o = new JSONObject();
+                                  o.put("name", pm.getApplicationLabel(ai).toString());
+                                  o.put("pkg", ai.packageName);
+                                  arr.put(o);
+                              }
+                          }
+                      } catch (Exception ignored) {}
+                      return arr.toString();
+                  }
+
+                  // 좌측 4:3 박스에 카플레이(Zlink/CarLink) 또는 내비게이션을 실제로 집어넣어 실행
+                  @JavascriptInterface
+                  public void mountAppInLeftBox(String slotName, boolean embedInBox, int x, int y, int w, int h) {
                       String saved = prefs.getString("slot_" + slotName, null);
                       List<String> candidates;
                       if ("carplay".equals(slotName)) {
-                          candidates = Arrays.asList(saved, "com.syu.carlink", "com.zjinnova.zlink", "cn.manstep.phonemirrorBox", "com.carlinkit.autokit", "com.suding.speedplay");
+                          candidates = Arrays.asList(saved, "com.zjinnova.zlink", "com.syu.carlink", "cn.manstep.phonemirrorBox", "com.carlinkit.autokit", "com.suding.speedplay", "com.limcet.play");
                       } else if ("tmap".equals(slotName)) {
                           candidates = Arrays.asList(saved, "com.skt.tmap.ku");
                       } else if ("kakao".equals(slotName)) {
@@ -812,19 +593,25 @@ jobs:
                       runOnUiThread(() -> {
                           Intent intent = getPackageManager().getLaunchIntentForPackage(finalPkg);
                           if (intent == null) return;
-                          intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+                          intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
                           if (embedInBox && virtualDisplay != null) {
                               FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(w, h);
                               lp.leftMargin = x;
                               lp.topMargin = y;
                               pipContainer.setLayoutParams(lp);
                               pipContainer.setVisibility(View.VISIBLE);
+                              pipContainer.bringToFront();
+
                               try {
                                   ActivityOptions opts = ActivityOptions.makeBasic();
-                                  Method m = ActivityOptions.class.getMethod("setLaunchDisplayId", int.class);
-                                  m.invoke(opts, virtualDisplay.getDisplay().getDisplayId());
+                                  Method setDisp = ActivityOptions.class.getMethod("setLaunchDisplayId", int.class);
+                                  setDisp.invoke(opts, virtualDisplay.getDisplay().getDisplayId());
                                   startActivity(intent, opts.toBundle());
+                                  Toast.makeText(MainActivity.this, "4:3 박스에 실행됨 (Display=" + virtualDisplay.getDisplay().getDisplayId() + ")", Toast.LENGTH_SHORT).show();
                               } catch (Exception e) {
+                                  Toast.makeText(MainActivity.this, "임베드 권한 부족(일반APK): " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                  pipContainer.setVisibility(View.GONE);
                                   startActivity(intent);
                               }
                           } else {
@@ -835,7 +622,7 @@ jobs:
                   }
 
                   @JavascriptInterface
-                  public void closePipBox() {
+                  public void hidePipBox() {
                       runOnUiThread(() -> pipContainer.setVisibility(View.GONE));
                   }
 
@@ -845,54 +632,39 @@ jobs:
                           if ("wind".equals(key)) {
                               int next = Math.max(0, Math.min(7, hvacState.optInt("windLevel", 2) + delta));
                               hvacState.put("windLevel", next);
-                              sendCanbusCmd(10, delta > 0 ? 1 : 0);
                           } else if ("ac".equals(key)) {
-                              boolean next = !hvacState.optBoolean("ac", true);
-                              hvacState.put("ac", next);
-                              sendCanbusCmd(2, next ? 1 : 0);
+                              hvacState.put("ac", !hvacState.optBoolean("ac", true));
                           } else if ("cycle".equals(key)) {
-                              boolean next = !hvacState.optBoolean("inOutCycle", true);
-                              hvacState.put("inOutCycle", next);
-                              sendCanbusCmd(3, next ? 1 : 0);
+                              hvacState.put("inOutCycle", !hvacState.optBoolean("inOutCycle", true));
                           } else if ("frontDef".equals(key)) {
-                              boolean next = !hvacState.optBoolean("frontDefrost", false);
-                              hvacState.put("frontDefrost", next);
-                              sendCanbusCmd(5, next ? 1 : 0);
+                              hvacState.put("frontDefrost", !hvacState.optBoolean("frontDefrost", false));
                           } else if ("rearDef".equals(key)) {
-                              boolean next = !hvacState.optBoolean("rearDefrost", false);
-                              hvacState.put("rearDefrost", next);
-                              sendCanbusCmd(6, next ? 1 : 0);
+                              hvacState.put("rearDefrost", !hvacState.optBoolean("rearDefrost", false));
                           } else if ("seatL".equals(key)) {
-                              int next = (hvacState.optInt("seatHeatL", 0) + 1) % 4;
-                              hvacState.put("seatHeatL", next);
-                              sendCanbusCmd(11, next);
+                              hvacState.put("seatHeatL", (hvacState.optInt("seatHeatL", 0) + 1) % 4);
                           } else if ("seatR".equals(key)) {
-                              int next = (hvacState.optInt("seatHeatR", 0) + 1) % 4;
-                              hvacState.put("seatHeatR", next);
-                              sendCanbusCmd(12, next);
+                              hvacState.put("seatHeatR", (hvacState.optInt("seatHeatR", 0) + 1) % 4);
                           } else if ("tempL".equals(key)) {
                               String raw = hvacState.optString("tempLeft", "21.0°").replace("°", "");
                               float cur = 20.5f;
                               try { cur = Float.parseFloat(raw); } catch (Exception ignored) {}
                               float next = Math.max(16.0f, Math.min(30.0f, cur + (delta * 0.5f)));
                               hvacState.put("tempLeft", next <= 16.0f ? "LO" : (next >= 30.0f ? "HI" : String.format(Locale.US, "%.1f°", next)));
-                              sendCanbusCmd(8, delta > 0 ? 1 : 0);
                           } else if ("tempR".equals(key)) {
                               String raw = hvacState.optString("tempRight", "21.0°").replace("°", "");
                               float cur = 20.5f;
                               try { cur = Float.parseFloat(raw); } catch (Exception ignored) {}
                               float next = Math.max(16.0f, Math.min(30.0f, cur + (delta * 0.5f)));
                               hvacState.put("tempRight", next <= 16.0f ? "LO" : (next >= 30.0f ? "HI" : String.format(Locale.US, "%.1f°", next)));
-                              sendCanbusCmd(9, delta > 0 ? 1 : 0);
                           }
                       } catch (Exception ignored) {}
-                      pushHvac();
+                      pushStateToUi();
                   }
 
                   @JavascriptInterface
                   public void saveSlotApp(String slotName, String pkg) {
                       prefs.edit().putString("slot_" + slotName, pkg).apply();
-                      Toast.makeText(MainActivity.this, "지정 완료: " + pkg, Toast.LENGTH_SHORT).show();
+                      Toast.makeText(MainActivity.this, "연결됨: " + pkg, Toast.LENGTH_SHORT).show();
                   }
 
                   @JavascriptInterface
@@ -953,13 +725,13 @@ jobs:
           }
           EOF
 
-          sed 's/^          //' << 'EOF' > fyt_java/app/src/main/assets/index.html
+          sed 's/^          //' << 'EOF' > dv_clone/app/src/main/assets/index.html
           <!DOCTYPE html>
           <html lang="ko">
           <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-            <title>2015 Camaro Black FYT 7862 Final</title>
+            <title>2015 Camaro DriveView Engine</title>
             <style>
               * { box-sizing: border-box; user-select: none; -webkit-user-select: none; margin: 0; padding: 0; }
               body, html {
@@ -969,12 +741,12 @@ jobs:
               }
               .glass {
                 background: linear-gradient(145deg, #0f1520, #090d14);
-                border: 1px solid rgba(255,255,255,0.08);
+                border: 1px solid rgba(255,255,255,0.09);
                 border-radius: 16px;
               }
               .btn {
-                background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-                color: #f1f5f9; border-radius: 11px; padding: 7px 11px; font-weight: 800; font-size: 12px;
+                background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+                color: #f1f5f9; border-radius: 10px; padding: 6px 11px; font-weight: 800; font-size: 12px;
                 display: inline-flex; align-items: center; justify-content: center; gap: 4px;
               }
               .btn:active { transform: scale(0.95); }
@@ -984,7 +756,7 @@ jobs:
               .right-col { display: grid; grid-template-rows: 62fr 38fr; gap: 8px; min-height: 0; }
               .bottom-hvac { height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; gap: 8px; }
               .modal {
-                position: fixed; inset: 0; background: rgba(3,5,9,0.92);
+                position: fixed; inset: 0; background: rgba(3,5,9,0.94);
                 display: none; align-items: center; justify-content: center; padding: 20px; z-index: 999;
               }
               .modal.show { display: flex; }
@@ -992,55 +764,47 @@ jobs:
           </head>
           <body>
             <header class="glass top-bar">
-              <div style="display:flex; align-items:center; gap:10px;">
-                <span id="clockTxt" style="font-size:18px; font-weight:900;">20:26</span>
-                <span id="canbusBadge" style="font-size:10px; background:rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(16,185,129,0.35); padding:3px 7px; border-radius:6px; font-weight:800;">
-                  LZ-Camaro 2015
-                </span>
-                <span id="rawMonitor" style="font-size:10px; color:#64748b;">CAN 대기</span>
+              <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+                <span id="clockTxt" style="font-size:18px; font-weight:900;">22:07</span>
+                <span id="uidBadge" style="font-size:10px; background:rgba(16,185,129,0.2); color:#34d399; padding:3px 7px; border-radius:6px; font-weight:900;">UID 확인중</span>
+                <span id="intentMonitor" style="font-size:10px; color:#94a3b8; max-width:340px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">CAN 대기</span>
                 <button id="btnNotiPerm" onclick="AndroidBridge.requestNotiPermission()" style="font-size:10px; background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-weight:800; display:none;">
                   ⚠️ 음악권한 켜기
                 </button>
-                <button id="btnOverlayPerm" onclick="AndroidBridge.requestOverlayPermission()" style="font-size:10px; background:#ea580c; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-weight:800; display:none;">
-                  ⚠️ 홈버튼 고정(오버레이) 켜기
-                </button>
               </div>
-              <div style="display:flex; align-items:center; gap:6px;">
-                <button class="btn active" onclick="AndroidBridge.requestDefaultHome()">📌 홈 고정</button>
+              <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+                <button class="btn active" onclick="mountLeft('carplay', true)">📥 4:3 카플레이 켜기</button>
+                <button class="btn" onclick="AndroidBridge.hidePipBox()">박스 숨김</button>
                 <button class="btn" onclick="openAppDrawer(null)">📱 앱 서랍</button>
-                <button class="btn" style="background:rgba(245,158,11,0.2); border-color:#f59e0b; color:#fbbf24;" onclick="AndroidBridge.goToStockFytLauncher()">🏠 순정 홈</button>
+                <button class="btn" style="background:rgba(245,158,11,0.2); border-color:#f59e0b; color:#fbbf24;" onclick="AndroidBridge.requestDefaultHome()">🏠 기본홈 지정</button>
               </div>
             </header>
 
             <main class="main-grid">
-              <section class="glass" style="padding:12px; display:flex; flex-direction:column; justify-content:space-between;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="background:rgba(16,185,129,0.2); color:#34d399; padding:4px 9px; border-radius:8px; font-size:11px; font-weight:900;">Apple CarPlay 4:3</span>
-                    <button class="btn" style="padding:4px 8px; font-size:10px;" onclick="AndroidBridge.closePipBox()">박스화면 닫기</button>
+              <!-- 좌측 4:3 실제 카플레이 내장 슬롯 -->
+              <section class="glass" style="padding:10px; display:flex; flex-direction:column; justify-content:space-between;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <div style="display:flex; gap:6px;">
+                    <button class="btn active" onclick="mountLeft('carplay', true)">CarPlay 박스실행</button>
+                    <button class="btn" onclick="mountLeft('tmap', true)">T-MAP 박스실행</button>
+                    <button class="btn" onclick="mountLeft('kakao', true)">카카오 박스실행</button>
                   </div>
                   <div style="display:flex; gap:6px;">
-                    <button class="btn" onclick="openAppDrawer('carplay')">연결앱 지정</button>
-                    <button class="btn active" onclick="triggerSlot('carplay', false)">전체화면 ↗</button>
+                    <button class="btn" onclick="openAppDrawer('carplay')">앱 변경</button>
+                    <button class="btn" onclick="mountLeft('carplay', false)">전체화면 ↗</button>
                   </div>
                 </div>
 
-                <div id="carplayBox" onclick="triggerSlot('carplay', false)" style="flex:1; margin:10px 0; border-radius:14px; background:radial-gradient(circle, rgba(14,165,233,0.14), rgba(15,23,42,0.9)); border:1px solid rgba(56,189,248,0.25); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;">
-                  <div style="font-size:24px; font-weight:900; color:#f8fafc;">Apple CarPlay / Zlink</div>
-                  <div style="display:flex; gap:8px;" onclick="event.stopPropagation();">
-                    <button class="btn active" style="padding:10px 14px; font-size:12px;" onclick="triggerSlot('carplay', true)">📥 이 4:3 박스에 카플레이 넣기</button>
-                    <button class="btn" style="padding:10px 14px; font-size:12px;" onclick="triggerSlot('tmap', true)">📥 이 박스에 티맵 넣기</button>
-                  </div>
-                </div>
-
-                <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:6px;">
-                  <button class="btn" style="padding:10px 4px;" onclick="triggerSlot('tmap', false)">📍 T-MAP</button>
-                  <button class="btn" style="padding:10px 4px;" onclick="triggerSlot('kakao', false)">🚕 카카오내비</button>
-                  <button class="btn" style="padding:10px 4px;" onclick="triggerSlot('naver', false)">🗺️ 네이버지도</button>
-                  <button class="btn" style="padding:10px 4px;" onclick="triggerSlot('obd', false)">🔧 Car Scanner</button>
+                <!-- VirtualDisplay가 정확히 덮어씌워지는 4:3 타겟 영역 -->
+                <div id="carplaySlotBox" style="flex:1; border-radius:14px; background:#090d16; border:1px solid rgba(56,189,248,0.3); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;">
+                  <div style="font-size:20px; font-weight:900; color:#38bdf8;">4:3 CarPlay / Navigation Slot</div>
+                  <button class="btn active" style="padding:12px 20px; font-size:14px;" onclick="mountLeft('carplay', true)">
+                    ▶ 여기를 눌러 이 칸 안에 카플레이 띄우기
+                  </button>
                 </div>
               </section>
 
+              <!-- 우측 상단 카마로 상태 + 우측 하단 음악 -->
               <section class="right-col">
                 <div class="glass" style="padding:12px; display:flex; flex-direction:column; justify-content:space-between;">
                   <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1057,7 +821,7 @@ jobs:
                   <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:6px;">
                     <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:8px; text-align:center;">
                       <div style="font-size:10px; color:#94a3b8;">전압</div>
-                      <div id="voltVal" style="font-size:15px; font-weight:900; color:#34d399; margin-top:3px;">14.3V</div>
+                      <div id="voltVal" style="font-size:15px; font-weight:900; color:#34d399; margin-top:3px;">14.2V</div>
                     </div>
                     <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:8px; text-align:center;">
                       <div style="font-size:10px; color:#94a3b8;">도어</div>
@@ -1067,7 +831,7 @@ jobs:
                       <div style="font-size:10px; color:#94a3b8;">트렁크</div>
                       <div id="trunkVal" style="font-size:13px; font-weight:900; color:#f8fafc; margin-top:4px;">닫힘</div>
                     </div>
-                    <div onclick="triggerSlot('obd', false)" style="background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); border-radius:10px; padding:8px; text-align:center;">
+                    <div onclick="mountLeft('obd', false)" style="background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); border-radius:10px; padding:8px; text-align:center;">
                       <div style="font-size:10px; color:#38bdf8;">OBD2</div>
                       <div style="font-size:12px; font-weight:900; color:#fff; margin-top:4px;">게이지</div>
                     </div>
@@ -1093,6 +857,7 @@ jobs:
                   </div>
                 </div>
 
+                <!-- 우측 하단 심플 음악 카드 -->
                 <div class="glass" style="padding:12px; display:flex; flex-direction:column; justify-content:space-between;">
                   <div style="display:flex; align-items:center; gap:10px;">
                     <img id="albumImg" src="" style="width:40px; height:40px; border-radius:8px; object-fit:cover; display:none;" />
@@ -1149,6 +914,7 @@ jobs:
               </button>
             </footer>
 
+            <!-- 동그란 버튼을 눌렀을 때만 열리는 전용 공조기 모달 -->
             <div id="hvacModal" class="modal">
               <div class="glass" style="width:92%; max-width:920px; padding:20px; display:flex; flex-direction:column; gap:16px; border:1px solid rgba(56,189,248,0.35);">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1184,6 +950,7 @@ jobs:
               </div>
             </div>
 
+            <!-- 앱 서랍 모달 -->
             <div id="drawerModal" class="modal">
               <div class="glass" style="width:90%; max-width:900px; padding:18px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -1200,14 +967,25 @@ jobs:
                 document.getElementById('clockTxt').textContent = new Date().toTimeString().slice(0,5);
               }, 1000);
 
-              function triggerSlot(slot, embed) {
-                const b = document.getElementById('carplayBox').getBoundingClientRect();
+              function mountLeft(slot, embed) {
+                const b = document.getElementById('carplaySlotBox').getBoundingClientRect();
                 const dpr = window.devicePixelRatio || 1;
-                AndroidBridge.launchSlot(slot, embed, Math.round(b.left * dpr), Math.round(b.top * dpr), Math.round(b.width * dpr), Math.round(b.height * dpr));
+                AndroidBridge.mountAppInLeftBox(
+                  slot,
+                  embed,
+                  Math.round(b.left * dpr),
+                  Math.round(b.top * dpr),
+                  Math.round(b.width * dpr),
+                  Math.round(b.height * dpr)
+                );
               }
 
+              window.autoMountLeftSlot = function() {
+                mountLeft('carplay', true);
+              };
+
               function openHvacModal(show) {
-                if (show) AndroidBridge.closePipBox();
+                if (show) AndroidBridge.hidePipBox();
                 document.getElementById('hvacModal').classList.toggle('show', show);
               }
 
@@ -1216,7 +994,7 @@ jobs:
                   document.getElementById('drawerModal').classList.remove('show');
                   return;
                 }
-                AndroidBridge.closePipBox();
+                AndroidBridge.hidePipBox();
                 mapSlot = slot;
                 const apps = JSON.parse(AndroidBridge.getInstalledApps() || '[]');
                 document.getElementById('appListGrid').innerHTML = apps.map(a => `
@@ -1233,17 +1011,19 @@ jobs:
                 if (mapSlot) {
                   AndroidBridge.saveSlotApp(mapSlot, pkg);
                   mapSlot = null;
+                  mountLeft('carplay', true);
                 } else {
                   AndroidBridge.launchPackage(pkg);
                 }
               }
 
-              window.onPermCheck = function(hasNoti, hasOverlay) {
+              window.onPermCheck = function(hasNoti) {
                 document.getElementById('btnNotiPerm').style.display = hasNoti ? 'none' : 'inline-block';
-                document.getElementById('btnOverlayPerm').style.display = hasOverlay ? 'none' : 'inline-block';
               };
 
               window.onHvacUpdate = function(st) {
+                document.getElementById('uidBadge').textContent = st.uid || 'UID';
+                document.getElementById('intentMonitor').textContent = st.lastIntent || '';
                 document.getElementById('barTempL').textContent = st.tempLeft;
                 document.getElementById('barTempR').textContent = st.tempRight;
                 document.getElementById('modTempL').textContent = st.tempLeft;
@@ -1258,9 +1038,7 @@ jobs:
                 document.getElementById('barSeatR').textContent = '💺 ' + (st.seatHeatR || 0);
                 document.getElementById('doorVal').textContent = st.doorOpen ? '⚠️ 열림' : '잠김';
                 document.getElementById('trunkVal').textContent = st.trunkOpen ? '⚠️ 열림' : '닫힘';
-                document.getElementById('rawMonitor').textContent = st.lastRaw || '';
               };
-              window.onCanbusBadge = function(txt) { document.getElementById('canbusBadge').textContent = txt; };
               window.onRealSpeed = function(s) { document.getElementById('spdVal').textContent = s; };
               window.onRealVolt = function(v) { document.getElementById('voltVal').textContent = v; };
               window.onMediaUpdate = function(m) {
@@ -1278,11 +1056,108 @@ jobs:
           </html>
           EOF
 
-          cd fyt_java
+          # 1) 일반 서명 버전 Manifest 및 빌드
+          sed 's/^          //' << 'EOF' > dv_clone/app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+              <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+              <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+              <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+              <uses-permission android:name="android.permission.REORDER_TASKS" />
+
+              <application
+                  android:allowBackup="true"
+                  android:label="Camaro RS Launcher"
+                  android:usesCleartextTraffic="true"
+                  android:theme="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:launchMode="singleTask"
+                      android:screenOrientation="sensorLandscape"
+                      android:stateNotNeeded="true"
+                      android:clearTaskOnLaunch="true"
+                      android:configChanges="orientation|screenSize|keyboardHidden|uiMode">
+                      <intent-filter android:priority="1000">
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.HOME" />
+                          <category android:name="android.intent.category.DEFAULT" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+                  <service
+                      android:name=".MediaNotificationService"
+                      android:exported="true"
+                      android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+                      <intent-filter>
+                          <action android:name="android.service.notification.NotificationListenerService" />
+                      </intent-filter>
+                  </service>
+              </application>
+          </manifest>
+          EOF
+
+          cd dv_clone
+          gradle assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk apk_out/2_Camaro_Normal_Debug.apk
+
+          # 2) DriveView와 동일한 System UID 1000 (sharedUserId="android.uid.system") + AOSP Platform Key 서명 버전 빌드
+          sed 's/^          //' << 'EOF' > app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+              android:sharedUserId="android.uid.system">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+              <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+              <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+              <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+              <uses-permission android:name="android.permission.REORDER_TASKS" />
+
+              <application
+                  android:allowBackup="true"
+                  android:label="Camaro RS Launcher (System)"
+                  android:usesCleartextTraffic="true"
+                  android:theme="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:launchMode="singleTask"
+                      android:screenOrientation="sensorLandscape"
+                      android:stateNotNeeded="true"
+                      android:clearTaskOnLaunch="true"
+                      android:configChanges="orientation|screenSize|keyboardHidden|uiMode">
+                      <intent-filter android:priority="1000">
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.HOME" />
+                          <category android:name="android.intent.category.DEFAULT" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+                  <service
+                      android:name=".MediaNotificationService"
+                      android:exported="true"
+                      android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+                      <intent-filter>
+                          <action android:name="android.service.notification.NotificationListenerService" />
+                      </intent-filter>
+                  </service>
+              </application>
+          </manifest>
+          EOF
+
           gradle assembleDebug --no-daemon
 
-      - name: 5. Upload Pure Java Camaro APK
+          # AOSP Platform Key 다운로드 후 apksigner로 System UID 서명
+          curl -sL https://raw.githubusercontent.com/aosp-mirror/platform_build/master/target/product/security/platform.pk8 -o platform.pk8
+          curl -sL https://raw.githubusercontent.com/aosp-mirror/platform_build/master/target/product/security/platform.x509.pem -o platform.x509.pem
+
+          APKSIGNER=$(find $ANDROID_HOME/build-tools -name "apksigner" | sort -V | tail -n 1)
+          "$APKSIGNER" sign --key platform.pk8 --cert platform.x509.pem --out apk_out/1_Camaro_SystemUID_1000.apk app/build/outputs/apk/debug/app-debug.apk
+
+      - name: 5. Upload Both System-UID & Normal APKs
         uses: actions/upload-artifact@v4
         with:
-          name: Camaro-FYT7862-PureJava-APK
-          path: fyt_java/app/build/outputs/apk/debug/app-debug.apk
+          name: Camaro-DriveViewEngine-APKs
+          path: dv_clone/apk_out/*.apk
